@@ -51,7 +51,7 @@ class Medicine:
 
 
 A=Medicine()
-A.SetName("a7a")
+A.SetName("Panadol")
 A.AddToDataBase()
 print A.name
 
