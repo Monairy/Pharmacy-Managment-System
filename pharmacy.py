@@ -11,6 +11,9 @@ class Database:
   workbookwr = load_workbook(filename=DataBaseFile) #Write
   SheetForWrite = workbookwr.active #Write
   
+  def UpdateRowIndex(self): #update row index for next addition
+       Database.SheetForRead.nrows = Database.SheetForRead.nrows+1
+  
   
   def func(self):
    print "77"
@@ -18,8 +21,7 @@ class Database:
 def GetRowIndex(): #index of row to write in
  return Database.SheetForRead.nrows+1
 
-def UpdateRowIndex(): #update row index for next addition
- Database.SheetForRead.nrows = Database.SheetForRead.nrows+1
+
 
 class Medicine:
  name="null"
@@ -40,18 +42,19 @@ class Medicine:
     
  def AddToDataBase(self):
     RowIndex=str(GetRowIndex())
-    Database.SheetForWrite["A"+RowIndex]= self.name
-    Database.SheetForWrite["B"+RowIndex]= self.barcode
-    Database.SheetForWrite["C"+RowIndex]= self.quantity
-    Database.SheetForWrite["D"+RowIndex]= self.expire
-    Database.SheetForWrite["E"+RowIndex]= self.price
-    Database.workbookwr.save(filename=DataBaseFile)
-    UpdateRowIndex() #update row index for next addition
+    DB=Database()
+    DB.SheetForWrite["A"+RowIndex]= self.name
+    DB.SheetForWrite["B"+RowIndex]= self.barcode
+    DB.SheetForWrite["C"+RowIndex]= self.quantity
+    DB.SheetForWrite["D"+RowIndex]= self.expire
+    DB.SheetForWrite["E"+RowIndex]= self.price
+    DB.workbookwr.save(filename=DataBaseFile)
+    DB.UpdateRowIndex() #update row index for next addition
 
 
 
 A=Medicine()
-A.SetName("Panadol")
+A.SetName("aaa")
 A.AddToDataBase()
 print A.name
 
