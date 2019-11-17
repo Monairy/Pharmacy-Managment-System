@@ -111,53 +111,86 @@ def HideMedicineUI():
   ButtonAdd.destroy()
   labeldone= Label(GUI,text="Medicine Added Successfuly",bg="GREY",fg="RED",font=("Times", 20))
   labeldone.place(x=120,y=200)
-   
-GUI = Tk()
-GUI.title("Pharmacy Managment System")
-GUI.configure(bg='GREY')
-GUI.minsize(1400,650)
-GUI.resizable(0,0)
-labelbanner= Label(GUI,text="Pharmacy Managment System",bg="LightBlue",fg="white",font=("Times", 30))
-labelbanner.grid(columnspan=7,padx=500)
 
 
-global labeldone
-labeldone= Label(GUI,text="Medicine Added Successfuly",bg="GREY",fg="RED",font=("Times", 20))
+def main():
+ LoginScreen.destroy()
+ GUI = Tk()
+ GUI.title("Pharmacy Managment System")
+ GUI.configure(bg='GREY')
+ GUI.minsize(1400,650)
+ GUI.resizable(0,0)
+ labelbanner= Label(GUI,text="Pharmacy Managment System",bg="LightBlue",fg="white",font=("Times", 30))
+ labelbanner.grid(columnspan=7,padx=500)
+
+ global labeldone
+ labeldone= Label(GUI,text="Medicine Added Successfuly",bg="GREY",fg="RED",font=("Times", 20))
 
 
-B0 = Button(GUI, text ="Add New Medicine", font=("Arial", 10),command = lambda : AddMedicineUI())
-B0.configure(height=3,width=20)
-B0.grid(row=1,column=0)
+ B0 = Button(GUI, text ="Add New Medicine", font=("Arial", 10),command = lambda : AddMedicineUI())
+ B0.configure(height=3,width=20)
+ B0.grid(row=1,column=0)
 
-B1 = Button(GUI, text ="Ay 7aga",font=("Arial", 10), command =lambda :  AddMedicineUI())
-B1.configure(height=3,width=20)
-B1.grid(row=1,column=1)
+ B1 = Button(GUI, text ="Ay 7aga",font=("Arial", 10), command =lambda :  AddMedicineUI())
+ B1.configure(height=3,width=20)
+ B1.grid(row=1,column=1)
 
-B2 = Button(GUI, text ="Ay 7aga bardo",font=("Arial", 10), command =lambda :  AddMedicineUI())
-B2.configure(height=3,width=20)
-B2.grid(row=1,column=2)
+ B2 = Button(GUI, text ="Ay 7aga bardo",font=("Arial", 10), command =lambda :  AddMedicineUI())
+ B2.configure(height=3,width=20)
+ B2.grid(row=1,column=2)
 
-B3 = Button(GUI, text ="Ay 7aga bardo",font=("Arial", 10), command =lambda :  AddMedicineUI())
-B3.configure(height=3,width=20)
-B3.grid(row=1,column=3)
+ B3 = Button(GUI, text ="Ay 7aga bardo",font=("Arial", 10), command =lambda :  AddMedicineUI())
+ B3.configure(height=3,width=20)
+ B3.grid(row=1,column=3)
 
-B4 = Button(GUI, text ="Ay 7aga bardo",font=("Arial", 10), command =lambda :  AddMedicineUI())
-B4.configure(height=3,width=20)
-B4.grid(row=1,column=4)
+ B4 = Button(GUI, text ="Ay 7aga bardo",font=("Arial", 10), command =lambda :  AddMedicineUI())
+ B4.configure(height=3,width=20)
+ B4.grid(row=1,column=4)
 
-B5 = Button(GUI, text ="Ay 7aga bardo",font=("Arial", 10), command =lambda :  AddMedicineUI())
-B5.configure(height=3,width=20)
-B5.grid(row=1,column=5)
+ B5 = Button(GUI, text ="Ay 7aga bardo",font=("Arial", 10), command =lambda :  AddMedicineUI())
+ B5.configure(height=3,width=20)
+ B5.grid(row=1,column=5)
 
-B6 = Button(GUI, text ="Ay 7aga bardo",font=("Arial", 10), command =lambda :  AddMedicineUI())
-B6.configure(height=3,width=20)
-B6.grid(row=1,column=6)
+ B6 = Button(GUI, text ="Ay 7aga bardo",font=("Arial", 10), command =lambda :  AddMedicineUI())
+ B6.configure(height=3,width=20)
+ B6.grid(row=1,column=6)
 
-labelfooter= Label(GUI,text="Version 1.00",bg="grey",font=("Times", 14))
-labelfooter.place(x=700,y=600)
+ labelfooter= Label(GUI,text="Version 1.00",bg="grey",font=("Times", 14))
+ labelfooter.place(x=700,y=600)
+ GUI.mainloop()
 
-GUI.mainloop()
-                 
+ 
+
+def login():
+  global LoginScreen
+  LoginScreen = Tk()
+  LoginScreen.title("Pharmacy Managment System")
+  LoginScreen.configure(bg='GREY')
+  LoginScreen.minsize(1400,650)
+  LoginScreen.resizable(0,0)
+  
+  labelbanner= Label(LoginScreen,text="Login To Continue",bg="RED",fg="BLACK",font=("Times", 30))
+  labelbanner.grid(columnspan=7,padx=500)
+  
+  usernameLabel=Label(LoginScreen, text=" Username: ", width=7, bg="grey",font=("Times",20))
+  usernameLabel.place(x=350,y=150)
+  usernameEntry = Entry(LoginScreen,font=("Times", 20))
+  usernameEntry.place(x=550,y=150)
+  
+  
+  PasswordLabel=Label(LoginScreen, text="Password:" , width=7, bg="grey",font=("Times",20))
+  PasswordLabel.place(x=350,y=250)
+  passwordEntry = Entry(LoginScreen, font=("Times", 20), show= '*')
+  passwordEntry.place(x=550,y=250)
+
+  
+  loginbutton= Button(LoginScreen, text ="Login",font=("Arial", 20), command =lambda :  main())
+  loginbutton.place(x=600,y=400)
+  LoginScreen.mainloop()
+
+login()
+
+
 """Medicines = []
 i=0
 while True:
@@ -175,10 +208,6 @@ while True:
 
 
     print "Medicine %s is added to Database" % MedName
-    
-
-
-
 
 EditPrice("ketofan","76")
 print "Price Updated"
