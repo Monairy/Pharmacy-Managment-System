@@ -57,7 +57,8 @@ def EditPrice(MedicineName,NewPrice):
             db.SaveDatabase()
 
 def AddMedicineUI():
-    global label1,label2,label3,label4,label5,entry1,entry2,entry3,entry4,entry5
+    global label1,label2,label3,label4,label5,entry1,entry2,entry3,entry4,entry5,ButtonAdd
+    labeldone.destroy()
     label1= Label(GUI,text="Name",bg="LightBlue",fg="white",font=("Times", 20),width=7,relief="ridge")
     label1.place(x=0,y=120)
     label2= Label(GUI,text="Barcode",bg="LightBlue",fg="white",font=("Times", 20),width=7,relief="ridge")
@@ -80,10 +81,11 @@ def AddMedicineUI():
     entry5=Entry(GUI , font=("Times", 20))
     entry5.place(x=150,y=280)
 
-    B4 = Button(GUI, text ="Add",font=("Arial", 14),command = lambda : NewMedicine())
-    B4.configure(height=1,width=10)
-    B4.place(x=100,y=320)
-
+    ButtonAdd = Button(GUI, text ="Add",font=("Arial", 14),command = lambda : NewMedicine())
+    ButtonAdd.configure(height=1,width=10)
+    ButtonAdd.place(x=100,y=320)
+    
+    
 def NewMedicine():
   Med=Medicine()
   Med.SetName(entry1.get())
@@ -95,6 +97,7 @@ def NewMedicine():
   HideMedicineUI()
 
 def HideMedicineUI():
+  global labeldone
   label1.destroy()
   label2.destroy()
   label3.destroy()
@@ -105,35 +108,53 @@ def HideMedicineUI():
   entry3.destroy()
   entry4.destroy()
   entry5.destroy()
-
+  ButtonAdd.destroy()
+  labeldone= Label(GUI,text="Medicine Added Successfuly",bg="GREY",fg="RED",font=("Times", 20))
+  labeldone.place(x=120,y=200)
    
 GUI = Tk()
 GUI.title("Pharmacy Managment System")
 GUI.configure(bg='GREY')
 GUI.minsize(1400,650)
 GUI.resizable(0,0)
-
 labelbanner= Label(GUI,text="Pharmacy Managment System",bg="LightBlue",fg="white",font=("Times", 30))
-labelbanner.grid(columnspan=8,padx=500)
+labelbanner.grid(columnspan=7,padx=500)
+
+
+global labeldone
+labeldone= Label(GUI,text="Medicine Added Successfuly",bg="GREY",fg="RED",font=("Times", 20))
+
+
+B0 = Button(GUI, text ="Add New Medicine", font=("Arial", 10),command = lambda : AddMedicineUI())
+B0.configure(height=3,width=20)
+B0.grid(row=1,column=0)
+
+B1 = Button(GUI, text ="Ay 7aga",font=("Arial", 10), command =lambda :  AddMedicineUI())
+B1.configure(height=3,width=20)
+B1.grid(row=1,column=1)
+
+B2 = Button(GUI, text ="Ay 7aga bardo",font=("Arial", 10), command =lambda :  AddMedicineUI())
+B2.configure(height=3,width=20)
+B2.grid(row=1,column=2)
+
+B3 = Button(GUI, text ="Ay 7aga bardo",font=("Arial", 10), command =lambda :  AddMedicineUI())
+B3.configure(height=3,width=20)
+B3.grid(row=1,column=3)
+
+B4 = Button(GUI, text ="Ay 7aga bardo",font=("Arial", 10), command =lambda :  AddMedicineUI())
+B4.configure(height=3,width=20)
+B4.grid(row=1,column=4)
+
+B5 = Button(GUI, text ="Ay 7aga bardo",font=("Arial", 10), command =lambda :  AddMedicineUI())
+B5.configure(height=3,width=20)
+B5.grid(row=1,column=5)
+
+B6 = Button(GUI, text ="Ay 7aga bardo",font=("Arial", 10), command =lambda :  AddMedicineUI())
+B6.configure(height=3,width=20)
+B6.grid(row=1,column=6)
 
 labelfooter= Label(GUI,text="Version 1.00",bg="grey",font=("Times", 14))
 labelfooter.place(x=700,y=600)
-
-
-B1 = Button(GUI, text ="Add New Medicine", command = lambda : AddMedicineUI())
-B1.configure(height=3)
-B1.grid(row=1,column=0)
-
-
-B2 = Button(GUI, text ="Add Medicine2", command =lambda :  AddMedicineUI())
-B2.configure(height=3)
-B2.grid(row=1,column=1)
-
-
-B3 = Button(GUI, text ="Add Medicine", command =lambda :  AddMedicineUI())
-B3.configure(height=3)
-B3.grid(row=1,column=2)
-
 
 GUI.mainloop()
                  
