@@ -1,21 +1,23 @@
-import xlrd
 from openpyxl import Workbook,load_workbook
 
-
 # Give the location of the file 
-DataBaseFile = ("db.xlsx") 
+Path = ("db.xlsx")
+
+"""
+Notes:
+   for writing in cell; column=letter, row=number(starting with 1)
+   save is a must after writing
+"""
   
 class Database:
-  WorkBook = xlrd.open_workbook(DataBaseFile) #read
-  SheetForRead = WorkBook.sheet_by_index(0) #read
-  workbookwr = load_workbook(filename=DataBaseFile) #Write
-  SheetForWrite = workbookwr.active #Write
-  
-  def UpdateRowIndex(self): #update row index for next addition
-       self.SheetForRead.nrows = self.SheetForRead.nrows+1
+  DataBaseFile=Path
+  workbook = load_workbook(filename=DataBaseFile) #Write
+  sheet= workbook.active #Write
   
   def GetRowIndex(self): #index of row to write in
-       return self.SheetForRead.nrows+1
+       return self.sheet.max_row+1
+  def SaveDatabase(self):
+      self.workbook.save(filename=self.DataBaseFile)
 
 
 class Medicine:
@@ -24,12 +26,12 @@ class Medicine:
  quantity="null"
  expire="null"
  price="null"
- def SetName(self,NewName):
-    self.name=NewName
+ def SetName(self,Name):
+    self.name=Name.lower()
  def SetBarcode(self,NewBarcode):
-    self.barcode=NewBarcode
+    self.barcode=Barcode
  def SetQuantity(self,NewQuantity):
-    self.quantity=NewQuantity    
+    self.quantity=Quantity    
  def SetExpire(self,NewExpire):
     self.expire=NewExpire    
  def SetPrice(self,NewPrice):
@@ -38,22 +40,44 @@ class Medicine:
  def AddToDataBase(self):
     DB=Database()
     RowIndex=str(DB.GetRowIndex())
-    DB.SheetForWrite["A"+RowIndex]= self.name
-    DB.SheetForWrite["B"+RowIndex]= self.barcode
-    DB.SheetForWrite["C"+RowIndex]= self.quantity
-    DB.SheetForWrite["D"+RowIndex]= self.expire
-    DB.SheetForWrite["E"+RowIndex]= self.price
-    DB.workbookwr.save(filename=DataBaseFile)
-    DB.UpdateRowIndex() #update row index for next addition
+    DB.sheet["A"+RowIndex]= self.name
+    DB.sheet["B"+RowIndex]= self.barcode
+    DB.sheet["C"+RowIndex]= self.quantity
+    DB.sheet["D"+RowIndex]= self.expire
+    DB.sheet["E"+RowIndex]= self.price
+    DB.SaveDatabase()
+    
+
+def EditPrice(MedicineName,NewPrice):
+   db=Database()
+   for row in range(1,db.sheet.max_row): # loop over rows
+      if(db.sheet["A"+str(row)].value.lower()==MedicineName.lower()):
+            db.sheet["E"+str(row)]= NewPrice #update price
+            db.SaveDatabase()
+
+
+                 
+Medicines = []
+i=0
+while True:
+    print "Enter Medicine Name:  "
+    MedName = raw_input()
+
+    if (MedName == 'done'):
+        break
+    
+    Medicines.append(MedName)
+    Medicines[i] = Medicine()
+    Medicines[i].SetName(MedName)
+    Medicines[i].AddToDataBase()
+    i=i+1
+
+
+    print "Medicine %s is added to Database" % MedName
+    
 
 
 
-A=Medicine()
-A.SetName("Panadol")
-A.AddToDataBase()
-print A.name
 
-DB=Database()
-print DB.GetRowIndex()
-
-
+EditPrice("ketofan","76")
+print "Price Updated"
