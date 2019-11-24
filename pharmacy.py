@@ -6,22 +6,24 @@ import datetime
 from tkdocviewer import DocViewer
 
 Path = ("MedicineDatabase.xlsx") #Path Of DataBase
-
+Path2 = ("OrderDatabase.xlsx")
 """
 Notes:
    for writing in cell; column=letter, row=number(starting with 1)
    save is a must after writing
 """
-  
-class MedicineDatabase:
-  DataBaseFile=Path
-  workbook = load_workbook(filename=DataBaseFile) #Write
-  sheet= workbook.active #Write
-  
+class Database:
   def GetRowIndex(self): #index of row to write in
        return self.sheet.max_row+1
   def SaveDatabase(self):
       self.workbook.save(filename=self.DataBaseFile)
+
+  
+class MedicineDatabase(Database):
+  DataBaseFile=Path
+  workbook = load_workbook(filename=DataBaseFile) #Write
+  sheet= workbook.active #Write
+  
   def SearchMedicineByName(self,MedicineName): # Find Medicine in Database with it's name and return dictionary of data
       DictOfData={}
       found = 0
@@ -62,8 +64,48 @@ class MedicineDatabase:
        if(str(self.sheet["A"+str(row)].value).lower()==MedicineName.lower()):
             self.sheet["E"+str(row)]= NewPrice #update price
             self.SaveDatabase()
-       
+  def AddMedicineToDataBase(self,medicine):
+    RowIndex=str(self.GetRowIndex())
+    if (medicine.name!=""): # To Avoid storing empty objects
+     self.sheet["A"+RowIndex]= medicine.name
+     self.sheet["B"+RowIndex]= medicine.barcode
+     self.sheet["C"+RowIndex]= medicine.quantity
+     self.sheet["D"+RowIndex]= medicine.expire
+     self.sheet["E"+RowIndex]= medicine.price
+     self.SaveDatabase()
+            
+class OrderDatabase(Database):
+  DataBaseFile=Path2
+  workbook = load_workbook(filename=DataBaseFile) #Write
+  sheet= workbook.active #Write
+  
+  def NextReceiptNo(self):
+    return self.sheet.max_row
+  
+  def AddOrderToDataBase(self,order):
+    RowIndex=str(self.GetRowIndex())
+    self.sheet["A"+RowIndex]= order.receiptnum # OrderID
+    self.sheet["B"+RowIndex]="" #initial value to avoid none
+    for i in range(0,len(order.items)): #Products 
+      self.sheet["B"+RowIndex]=str(self.sheet["B"+RowIndex].value) + order.items[i] + ","
+    self.sheet["C"+RowIndex]="" #initial value to avoid none  
+    for i in range(0,len(order.items)): #quantities 
+      self.sheet["C"+RowIndex]=str(self.sheet["C"+RowIndex].value) + order.quantities[i] + ","
+    self.sheet["D"+RowIndex]= order.CalcSum() #total price 
+    self.sheet["E"+RowIndex]= order.PaymentType #Payment Type Cash or Visa
+    self.sheet["F"+RowIndex]= order.date #Date
+    self.SaveDatabase()
+    self.DeductQuantityFromMedicineDataBase(order)
 
+  def DeductQuantityFromMedicineDataBase(self,order): #after successful order
+     DB=MedicineDatabase()
+     for i in range(0,len(order.items)):
+       MedicineName=order.items[i]
+       SoldQuantity=int(order.quantities[i])
+       AvailableQuantity=int(DB.SearchMedicineByName(MedicineName)["quantity"])
+       DB.EditMedicineQuantity(MedicineName,AvailableQuantity-SoldQuantity)
+
+    
 class Medicine:
  name="null"
  barcode="null"
@@ -79,18 +121,11 @@ class Medicine:
  def SetExpire(self,Expire):
     self.expire=Expire    
  def SetPrice(self,Price):
-    self.price=Price
-    
+    self.price=Price    
  def AddToDataBase(self):
     DB=MedicineDatabase()
-    RowIndex=str(DB.GetRowIndex())
-    if (self.name!=""): # To Avoid storing empty objects
-     DB.sheet["A"+RowIndex]= self.name
-     DB.sheet["B"+RowIndex]= self.barcode
-     DB.sheet["C"+RowIndex]= self.quantity
-     DB.sheet["D"+RowIndex]= self.expire
-     DB.sheet["E"+RowIndex]= self.price
-     DB.SaveDatabase()
+    DB.AddMedicineToDataBase(self)
+
     
 def ShowError(error):
   errorbox = Tk()
@@ -102,15 +137,15 @@ def AddMedicineUI():
     global label1,label2,label3,label4,label5,entry1,entry2,entry3,entry4,entry5,ButtonAdd
     DestroyAll()
 
-    label1= Label(GUI,text="name",bg="LightBlue",fg="white",font=("Times", 20),width=7,relief="ridge")
+    label1= Label(GUI,text="name",    bg="LightBlue",fg="white",font=("Times", 20),width=7,relief="ridge")
     label1.place(x=0,y=120)
-    label2= Label(GUI,text="barcode",bg="LightBlue",fg="white",font=("Times", 20),width=7,relief="ridge")
+    label2= Label(GUI,text="barcode", bg="LightBlue",fg="white",font=("Times", 20),width=7,relief="ridge")
     label2.place(x=0,y=160)
     label3= Label(GUI,text="quantity",bg="LightBlue",fg="white",font=("Times", 20),width=7,relief="ridge")
     label3.place(x=0,y=200)
-    label4= Label(GUI,text="expire",bg="LightBlue",fg="white",font=("Times", 20),width=7,relief="ridge")
+    label4= Label(GUI,text="expire",  bg="LightBlue",fg="white",font=("Times", 20),width=7,relief="ridge")
     label4.place(x=0,y=240)
-    label5= Label(GUI,text="price",bg="LightBlue",fg="white",font=("Times", 20),width=7,relief="ridge")
+    label5= Label(GUI,text="price",   bg="LightBlue",fg="white",font=("Times", 20),width=7,relief="ridge")
     label5.place(x=0,y=280)
     
     entry1=Entry(GUI , font=("Times", 20))
@@ -232,8 +267,9 @@ def EditMedicine(arg): # 1:barcode, 2:quantity, 3:expire, 4:price
 class Receipt(): # 3 lists items:quantities:prices
   receiptnum=0
   OrderType="In Store" #store or delivery
-  PaymentType="N/A"
+  PaymentType="Cash"
   DeliveryAddress="N/A"
+  date=str(datetime.datetime.now())[:16]
   items=[]
   quantities=[]
   prices=[]
@@ -241,17 +277,24 @@ class Receipt(): # 3 lists items:quantities:prices
     self.items.append(item)
     self.quantities.append(quantity)
     self.prices.append(price)
+    self.SetReceiptNum()
+  def SetReceiptNum(self):
+     DB=OrderDatabase()
+     self.receiptnum=DB.NextReceiptNo()
   def SetPaymentType(self,paymenttype):
-    self.PaymentType=Paymenttype
+    self.PaymentType=paymenttype    
   def SetType(self,Type):
-     selt.OrderType=Type   
-  def SetDeliveryAddress(self,Adress):
-     selt.DeliveryAddress=Adress
-  def CalcSum(self):
+     self.OrderType=Type   
+  def SetDeliveryAddress(self,Address):
+     self.DeliveryAddress=Address
+  def CalcSum(self): # returns string of total order price
     total=0
     for i in range (0,len(self.prices)):
       total = total+int(self.quantities[i])*int(self.prices[i])
     return str(total)
+  def AddToDataBase(self):
+     DB=OrderDatabase()
+     DB.AddOrderToDataBase(self)  
   def printrec(self):
     print (self.items)
     print (self.quantities)
@@ -260,7 +303,7 @@ class Receipt(): # 3 lists items:quantities:prices
 
 def MakeReceiptUI():
     DestroyAll()
-    global label7,entry11,ButtonAddToReceipt, label8,entry12,ButtonMakeReceipt
+    global label7,entry11,ButtonAddToReceipt, label8,entry12,ButtonMakeReceipt,receiptContents,labelPaymentType,buttoncash,buttonvisa
     label7= Label(GUI,text="Enter Medicine Name: ",bg="LightBlue",fg="white",font=("Times", 18),width=20,relief="ridge")
     label7.place(x=360,y=120)
     
@@ -279,11 +322,23 @@ def MakeReceiptUI():
     ButtonAddToReceipt.configure(height=1,width=15)
     ButtonAddToReceipt.place(x=550,y=200)
 
+    #######################################
+    labelPaymentType = Label(GUI,text="Choose Payment Type: ",bg="LightBlue",font=("Arial", 14),relief="ridge")
+    labelPaymentType.place(x=400,y=250)
+    buttoncash=Radiobutton(GUI, text="Cash",variable=PaymentType, value=1,bg="grey",font=("Arial", 14))
+    buttoncash.place(x=420,y=280)
+    buttonvisa=Radiobutton(GUI,text="Visa",variable=PaymentType, value=2,bg="grey",font=("Arial", 14))
+    buttonvisa.place(x=520,y=280)
+
+
+
+
+    
+    ######################################
     ButtonMakeReceipt = Button(GUI, text ="Generate Receipt",font=("Arial", 20),command = lambda : MakeReceipt())
     ButtonMakeReceipt.configure(height=1,width=20)
     ButtonMakeReceipt.place(x=550,y=400)
-    
-    global receiptContents
+    #####################################
     receiptContents = Text(GUI, height=40, width=30)
     receiptContents.insert(END,"Item           "+"Q   "+"Price\n" )
 
@@ -292,18 +347,27 @@ def AddToReceiptUI(MedName,Quantity): # make initial look of receipt contents
   MedDB = MedicineDatabase()
   PriceFromDB = MedDB.SearchMedicineByName(MedName)["price"]
   QuantityInDB= int(MedDB.SearchMedicineByName(MedName)["quantity"])
+  
   receiptContents.place(x=900,y=120)
+  
   if (int(Quantity)>QuantityInDB):
     ShowError("Insufficient Quantity\n only "+ str(QuantityInDB) +" in stock")
   if (PriceFromDB!="Not Found" and int(Quantity)<=QuantityInDB ):
     receiptContents.insert(END, MedName+space(MedName,15)+Quantity+space(Quantity,5)+PriceFromDB+"\n")
 
+
 def MakeReceipt(): #construct receipt object
-  OrderList=receiptContents.get("2.0",END).split("\n")[:-2] #Make list of lines starting from 2 > item:quantiy:price
+  OrderList=receiptContents.get("2.0",END).split("\n")[:-2] #Make list of lines starting from line2 > item:quantiy:price
   receipt = Receipt()
   receipt.items.clear()      #######
   receipt.quantities.clear() #######
   receipt.prices.clear()    #######
+  
+  if (PaymentType.get()==1):
+    receipt.SetPaymentType("Cash")
+  else:
+     receipt.SetPaymentType("Visa")
+
   for i in range(0,len(OrderList)): # add items to receipt object
     item=OrderList[i].split()[0]
     quantity=OrderList[i].split()[1]
@@ -311,18 +375,24 @@ def MakeReceipt(): #construct receipt object
     receipt.AddItem(item,quantity,price)
 
   GenerateReceipt(receipt,len(OrderList))
+  receiptContents.destroy()
+
+
    
 def GenerateReceipt(receipt,receiptlength): # make file for receipt and preview it
+  
  with open("receipt.txt", "w") as receiptfile:
     receiptfile.write("    Group25 Pharmacy\n")
     receiptfile.write("========================\n")
-    receiptfile.write("       receipt#1   \n")
+    receiptfile.write("       receipt#"+str(receipt.receiptnum)+"\n")
+    receiptfile.write("Payment: "+receipt.PaymentType+"\n")
+    
     receiptfile.write("========================\n")
 
     receiptfile.write("Item           Q   Price\n")
     
     receiptfile.write("------------------------\n")
-    for i in range(0,receiptlength):
+    for i in range(0,receiptlength): ## write all items in receipt
       item=receipt.items[i]
       quantity=receipt.quantities[i]
       price=receipt.prices[i]
@@ -351,6 +421,8 @@ def GenerateReceipt(receipt,receiptlength): # make file for receipt and preview 
     ButtonClose.configure(height=1,width=10)
     ButtonClose.place(x=160,y=500)     
 
+ receipt.AddToDataBase()
+
 def space(word,numofspaces):
    space = ""
    for i in range (0,numofspaces-len(word)):
@@ -362,13 +434,15 @@ def main():
  global GUI
  GUI = Tk()
  GUI.title("Pharmacy Managment System")
- GUI.configure(bg='GREY')
+ GUI.configure(bg='Grey')
  GUI.minsize(1400,650)
  GUI.resizable(0,0)
- 
- labelbanner= Label(GUI,text="Pharmacy Managment System",bg="LightBlue",fg="white",font=("Times", 30))
+ global PaymentType
+ PaymentType = IntVar() ###############
+
+ labelbanner= Label(GUI,text="Pharmacy Managment System",bg="LightBlue",fg="White",font=("Times", 30),relief="ridge")
  labelbanner.grid(columnspan=7,padx=500)
- LoginScreen.destroy()
+# LoginScreen.destroy()
 
 
  B0 = Button(GUI, text ="Add New Medicine", font=("Arial", 15),command = lambda : AddMedicineUI())
@@ -471,12 +545,16 @@ def DestroyAll(): # make sure that area we use is clear before placing objects
         label8.destroy()
         entry12.destroy()
         ButtonMakeReceipt.destroy()
+        buttoncash.destroy()
+        buttonvisa.destroy()
+        labelPaymentType.destroy()
         receiptContents.destroy()
+
   except:
          pass
 
 
-login()
+main()
 
 
 '''receipt=Receipt()
@@ -489,3 +567,5 @@ receipt.CalcSum()
 for key,value in Receipt.items.items():
     print (key[0])'''
         
+
+
