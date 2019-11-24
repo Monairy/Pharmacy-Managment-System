@@ -1,10 +1,11 @@
 # Pharmacy-Managment-System
 ## Python 3 is now supported
 
-## Make sure you have openpyxl
+## Make sure you have openpyxl,tkdocviewer
 
 ```
-$ pip install openpyxl
+$ pip3 install openpyxl
+$ pip3 install tkdocviewer
 ```
 
 
