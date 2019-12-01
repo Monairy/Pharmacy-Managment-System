@@ -8,6 +8,8 @@ from tkdocviewer import DocViewer
 Path = ("MedicineDatabase.xlsx") #Path Of DataBase
 Path2 = ("OrderDatabase.xlsx")
 path3=("ClientDatabase.xlsx")
+Admin_path = ('EmployeeDatabase.xlsx')
+
 """
 Notes:
    for writing in cell; column=letter, row=number(starting with 1)
@@ -649,6 +651,14 @@ def main():
  GUI.configure(bg='Grey')
  GUI.minsize(1400,650)
  GUI.resizable(0,0)
+
+ try:
+   AdminGui.destroy()
+ except:
+   pass
+  
+# LoginScreen.destroy()
+
  global PaymentType
  PaymentType = IntVar() ###############
  global OrderType
@@ -656,7 +666,6 @@ def main():
 
  labelbanner= Label(GUI,text="Pharmacy Managment System",bg="LightBlue",fg="White",font=("Times", 30),relief="ridge")
  labelbanner.grid(columnspan=7,padx=500)
-# LoginScreen.destroy()
 
 
  B0 = Button(GUI, text ="Add New Medicine", font=("Arial", 15),command = lambda : AddMedicineUI())
@@ -683,7 +692,7 @@ def main():
  B5.configure(height=2,width=16)
  B5.grid(row=1,column=5)
 
- B6 = Button(GUI, text ="Administration",font=("Arial", 15), command =lambda :  AddMedicineUI())
+ B6 = Button(GUI, text ="Administration",font=("Arial", 15), command =lambda :  AdminUi())
  B6.configure(height=2,width=16)
  B6.grid(row=1,column=6)
 
@@ -721,6 +730,197 @@ def login():
   loginbutton= Button(LoginScreen, text ="Login",font=("Arial", 20), command =lambda :  main())
   loginbutton.place(x=600,y=400)
   LoginScreen.mainloop()
+
+
+
+####################################
+####################################
+####################################
+
+class EmployeeDataBase(Database):
+    DataBaseFile = Admin_path
+    workbook = load_workbook(filename=DataBaseFile)
+    sheet = workbook.active
+
+    def SearchEmployee(self, EmployeeName):
+        EmployeeDectionary = {}
+        for row in range(1, self.sheet.max_row + 1):  # loop over rows
+            if (str(self.sheet["C" + str(row)].value).lower() == EmployeeName.lower()):
+                EmployeeDectionary["username"] = self.sheet["A" + str(row)].value
+                EmployeeDectionary["password"] = self.sheet["B" + str(row)].value
+                EmployeeDectionary["national_id"] = self.sheet["D" + str(row)].value
+                EmployeeDectionary["address"] = self.sheet["E" + str(row)].value
+                EmployeeDectionary["phone"] = self.sheet["F" + str(row)].value
+                EmployeeDectionary["age"] = self.sheet["G" + str(row)].value
+                return EmployeeDectionary
+
+    def AddEmployee(self,Employee):
+        Row = str(self.GetRowIndex())
+        self.sheet["A" + Row] = Employee.username
+        self.sheet["B" + Row] = Employee.password
+        self.sheet["C" + Row] = Employee.name
+        self.sheet["D" + Row] = Employee.national_id
+        self.sheet["E" + Row] = Employee.phone_number
+        self.sheet["F" + Row] = Employee.address
+        self.sheet["G" + Row] = Employee.age
+        self.SaveDatabase()
+
+####################################
+####################################
+####################################
+
+class Employee:
+    name = 'null'
+    national_id = 'null'
+    phone_number = 'null'
+    address = 'null'
+    age = 'null'
+    username = 'null'
+    password = 'null'
+
+    def SetUserName(self, UserName):
+        self.username = UserName.lower()
+    def SetPassword(self, Password):
+        self.password = Password.lower()
+    def SetName(self, Name):
+        self.name = Name.lower()
+    def SetNationalId(self, Id):
+        self.national_id = Id
+    def SetPhoneNumber(self, phone):
+        self.phone_number = phone
+    def SetAddress(self, Add):
+        self.address = Add
+    def SetAge(self, Age):
+        self.age = Age
+    def AddToDataBase(self):
+        AdminDB = EmployeeDataBase()
+        AdminDB.AddEmployee(self)
+
+
+
+def NewEmployee():
+    employee = Employee()
+    employee.SetUserName(entry6.get())
+    employee.SetPassword(entry7.get())
+    employee.SetName(entry8.get())
+    employee.SetNationalId(entry9.get())
+    employee.SetAddress(entry8.get())
+    employee.SetPhoneNumber(entry10.get())
+    employee.SetAge(entry11.get())
+    employee.AddToDataBase()
+    employeeadded = Label(AdminGui, text="Employee Added Successfuly", bg="GREY", fg="RED", font=("Times", 20))
+    employeeadded.place(x=120, y=450)
+    GUI.after(2000,lambda:employeeadded.destroy())
+
+############################
+############################
+############################
+
+def DisplayEmployeeInfo(searched_name):
+    global info_display
+
+    D2 = EmployeeDataBase()
+    Dictdata = D2.SearchEmployee(searched_name)
+    
+    info_display = Text(AdminGui, height=15, width=25)
+    info_display.grid(column=2, row=5)
+    info_display.insert(INSERT, 'Name: '+searched_name+'\n')
+    info_display.insert(INSERT, 'User Name: ' + Dictdata["username"] + '\n')
+    info_display.insert(INSERT, 'Password: ' + Dictdata["password"] + '\n')
+    info_display.insert(INSERT, 'National ID: ' + Dictdata["national_id"] + '\n')
+    info_display.insert(INSERT, 'Address: ' + Dictdata["address"] + '\n')
+    info_display.insert(INSERT, 'Phone: ' + Dictdata["phone"] + '\n')
+    info_display.insert(INSERT, 'Age: ' + Dictdata["age"] + '\n')
+    info_display.configure(state='disabled')
+
+
+
+def GetEmployeeName():
+    global search_label,search_entry,Buttonseach
+    DestroyAll()
+
+    search_label = Label(AdminGui, text="Name", bg="LightBlue", fg="white", font=("Times", 20), width=9, relief="ridge")
+    search_label.place(x=0, y=120)
+    search_entry = Entry(AdminGui, font=("Times", 20))
+    search_entry.place(x=150, y=120)
+    Buttonseach = Button(AdminGui, text="Search", font=("Arial", 14), command=lambda: DisplayEmployeeInfo(search_entry.get()))
+    Buttonseach.configure(height=1, width=10)
+    Buttonseach.place(x=100, y=160)
+
+
+
+def AddEmployee():
+    global label6, label7, label8, label9, labe20,labe21,labe22, entry6, entry7, entry8, entry9, entry10,entry11,entry12, AddInfo
+
+    DestroyAll()
+
+    label6 = Label(AdminGui, text="Username", bg="LightBlue", fg="white", font=("Times", 20), width=9, relief="ridge")
+    label6.place(x=0, y=120)
+    label7 = Label(AdminGui, text="Password", bg="LightBlue", fg="white", font=("Times", 20), width=9, relief="ridge")
+    label7.place(x=0, y=160)
+    label8 = Label(AdminGui, text="Name", bg="LightBlue", fg="white", font=("Times", 20), width=9, relief="ridge")
+    label8.place(x=0, y=200)
+    label9 = Label(AdminGui, text="National ID", bg="LightBlue", fg="white", font=("Times", 20), width=9, relief="ridge")
+    label9.place(x=0, y=240)
+    labe20 = Label(AdminGui, text="Address", bg="LightBlue", fg="white", font=("Times", 20), width=9, relief="ridge")
+    labe20.place(x=0, y=280)
+    labe21 = Label(AdminGui, text="Phone Num", bg="LightBlue", fg="white", font=("Times", 20), width=9, relief="ridge")
+    labe21.place(x=0, y=320)
+    labe22 = Label(AdminGui, text="Age", bg="LightBlue", fg="white", font=("Times", 20), width=9, relief="ridge")
+    labe22.place(x=0, y=360)
+
+    entry6 = Entry(AdminGui, font=("Times", 20))
+    entry6.place(x=150, y=120)
+    entry7 = Entry(AdminGui, font=("Times", 20))
+    entry7.place(x=150, y=160)
+    entry8 = Entry(AdminGui, font=("Times", 20))
+    entry8.place(x=150, y=200)
+    entry9 = Entry(AdminGui, font=("Times", 20))
+    entry9.place(x=150, y=240)
+    entry10 = Entry(AdminGui, font=("Times", 20))
+    entry10.place(x=150, y=280)
+    entry11 = Entry(AdminGui, font=("Times", 20))
+    entry11.place(x=150, y=320)
+    entry12 = Entry(AdminGui, font=("Times", 20))
+    entry12.place(x=150, y=360)
+
+    AddInfo = Button(AdminGui, text="Add", font=("Arial", 14), command=lambda: NewEmployee())
+    AddInfo.configure(height=1, width=10)
+    AddInfo.place(x=100, y=400)
+
+
+def AdminUi():
+    global AdminGui
+    AdminGui = Tk()
+    
+    GUI.destroy()
+
+
+    AdminGui.title("Adminstration mode")
+    AdminGui.configure(bg='GREY')
+    AdminGui.minsize(1400, 650)
+    AdminGui.resizable(0, 0)
+    banner = Label(AdminGui, text="Adminstration mode", bg="Green", fg="white", font=("Times", 30))
+    banner.grid(columnspan=7, padx=500)
+
+    global employeeadded
+    employeeadded = Label(AdminGui, text="Employee Added Successfuly", bg="GREY", fg="RED", font=("Times", 20))
+
+    Bot1 = Button(AdminGui, text="Add New Employee", font=("Arial", 10), command=lambda: AddEmployee())
+    Bot1.configure(height=3, width=20)
+    Bot1.grid(row=1, column=0)
+
+    Bot2 = Button(AdminGui, text="Get Employee Information", font=("Arial", 10), command=lambda: GetEmployeeName())
+    Bot2.configure(height=3, width=20)
+    Bot2.grid(row=1, column=1)
+
+    Bot3 = Button(AdminGui, text="Back", font=("Arial", 10), command=lambda:  main())
+    Bot3.configure(height=3, width=20)
+    Bot3.grid(row=1, column=2)
+
+    AdminGui.mainloop()
+
+
 
 
 def DestroyAll(): # make sure that area we use is clear before placing objects
@@ -790,8 +990,34 @@ def DestroyAll(): # make sure that area we use is clear before placing objects
     ButtonAddClient.destroy()
   except:
     pass
-  
+  try:
+        label6.destroy()
+        label7.destroy()
+        label8.destroy()
+        label9.destroy()
+        labe20.destroy()
+        labe21.destroy()
+        labe22.destroy()
+        entry6.destroy()
+        entry7.destroy()
+        entry8.destroy()
+        entry9.destroy()
+        entry10.destroy()
+        entry11.destroy()
+        entry12.destroy()
+        AddInfo.destroy()
+  except:
+        pass
+  try:
+    search_label.destroy()
+    search_entry.destroy()
+    Buttonseach.destroy()
+    info_display.destroy()
+  except:
+    pass
+
 main()
+
 
 
 '''receipt=Receipt()
