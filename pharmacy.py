@@ -7,6 +7,7 @@ from tkdocviewer import DocViewer
 
 Path = ("MedicineDatabase.xlsx") #Path Of DataBase
 Path2 = ("OrderDatabase.xlsx")
+path3=("ClientDatabase.xlsx")
 """
 Notes:
    for writing in cell; column=letter, row=number(starting with 1)
@@ -99,6 +100,10 @@ class OrderDatabase(Database):
     self.sheet["D"+RowIndex]= order.CalcSum() #total price 
     self.sheet["E"+RowIndex]= order.PaymentType #Payment Type Cash or Visa
     self.sheet["F"+RowIndex]= order.date #Date
+    self.sheet["G"+RowIndex]= order.OrderType #order type
+    self.sheet["H"+RowIndex]= order.ClientID #Client id
+    self.sheet["I"+RowIndex]= order.DeliveryAddress #delivery adress
+    
     self.SaveDatabase()
     self.DeductQuantityFromMedicineDataBase(order)
 
@@ -136,8 +141,27 @@ class OrderDatabase(Database):
 ####################################
 ##########_Clients_DB_############
 ####################################
-class ClientDatabase(Database):#####################################################
- pass
+class ClientDatabase(Database):
+  DataBaseFile=path3
+  workbook = load_workbook(filename=DataBaseFile) #Write
+  sheet= workbook.active #Write
+
+  def NextClientID(self):
+    return self.sheet.max_row
+
+  def AddClientToDataBase(self,client):
+    RowIndex=str(self.GetRowIndex())
+    if (client.name!=""): # To Avoid storing empty objects
+     self.sheet["A"+RowIndex]= client.ID
+     self.sheet["B"+RowIndex]= client.name
+     self.sheet["C"+RowIndex]= client.phonenumber
+     self.sheet["D"+RowIndex]= client.address
+     self.SaveDatabase()
+
+  def GetClientAddress(self,ClientID):
+    for i in range (1,self.GetRowIndex()):
+      if (str(self.sheet["A"+str(i)].value)==str(ClientID)):
+          return self.sheet["D"+str(i)].value  ## returns address of client
 
 
 ####################################
@@ -168,10 +192,11 @@ class Medicine:
 #########_Receipt_Class_############
 ####################################   
 class Receipt(): # 3 lists items:quantities:prices
-  receiptnum=0
+  receiptnum="0"
   OrderType="In Store" #store or delivery
   PaymentType="Cash"
   DeliveryAddress="N/A"
+  ClientID="0"
   date=str(datetime.datetime.now())[:16]
   items=[]
   quantities=[]
@@ -179,8 +204,8 @@ class Receipt(): # 3 lists items:quantities:prices
   def AddItem(self,item,quantity,price):
     self.items.append(item)
     self.quantities.append(quantity)
-    self.prices.append(price)
     self.SetReceiptNum()
+    self.prices.append(price)
   def SetReceiptNum(self):
      DB=OrderDatabase()
      self.receiptnum=DB.NextReceiptNo()
@@ -190,6 +215,9 @@ class Receipt(): # 3 lists items:quantities:prices
      self.OrderType=Type   
   def SetDeliveryAddress(self,Address):
      self.DeliveryAddress=Address
+  def SetClientID(self,clientid):
+     self.ClientID=clientid
+     
   def CalcSum(self): # returns string of total order price
     total=0
     for i in range (0,len(self.prices)):
@@ -198,19 +226,31 @@ class Receipt(): # 3 lists items:quantities:prices
   def AddToDataBase(self):
      DB=OrderDatabase()
      DB.AddOrderToDataBase(self)  
-  def printrec(self):
-    print (self.items)
-    print (self.quantities)
-    print (self.prices)
+
 
 ####################################
 ##########_Client_Class_############
 ####################################
-class Client(): ################################################
-  address="null"
-  number="0"
-  ID="0"
+class Client(): 
+    ID="null"
+    name="null"
+    phonenumber="null"
+    address="null"
 
+    def SetID(self):
+       DB=ClientDatabase()
+       self.ID=DB.NextClientID()
+    def SetName(self,Name):
+       self.name=Name.lower()
+    def SetPhone(self,Number):
+       self.phonenumber=Number
+    def SetAddress(self,Address):
+       self.address=Address        
+    def AddToDataBase(self):
+       DB=ClientDatabase()
+       self.SetID()
+       DB.AddClientToDataBase(self)
+    
 
 ####################################
 ########_USEFUL_FUNCTIONS_##########
@@ -396,18 +436,19 @@ def MakeReceiptUI():
     buttonvisa=Radiobutton(GUI,text="Visa",variable=PaymentType, value=2,bg="grey",font=("Arial", 14))
     buttonvisa.place(x=520,y=280)
 
-    
-    labelOrderType = Label(GUI,text="Choose Oder Type: ",bg="LightBlue",font=("Arial", 14),relief="ridge")
+
+
+    labelOrderType = Label(GUI,text="Choose Oder Type: ",bg="LightBlue",font=("Arial", 14),relief="ridge") ## In-Store Or delivery
     labelOrderType.place(x=620,y=250)
     buttonstore=Radiobutton(GUI, text="In-Store",variable=OrderType, value=1,bg="grey",font=("Arial", 14))
     buttonstore.place(x=620,y=280)
-    buttondelivery=Radiobutton(GUI,text="Delivery",variable=OrderType, value=2,bg="grey",font=("Arial", 14))
+    buttondelivery=Radiobutton(GUI,text="Delivery",variable=OrderType, value=2,bg="grey",font=("Arial", 14),command=lambda:DeliveryUI())
     buttondelivery.place(x=720,y=280)
    
     ######################################
     ButtonMakeReceipt = Button(GUI, text ="Generate Receipt",font=("Arial", 20),command = lambda : MakeReceipt())
     ButtonMakeReceipt.configure(height=1,width=20)
-    ButtonMakeReceipt.place(x=550,y=400)
+    ButtonMakeReceipt.place(x=550,y=500)
     #####################################
     receiptContents = Text(GUI, height=40, width=30)
     receiptContents.insert(END,"Item           "+"Q   "+"Price\n" )
@@ -425,6 +466,18 @@ def AddToReceiptUI(MedName,Quantity): # make initial look of receipt contents
   if (PriceFromDB!="Not Found" and int(Quantity)<=QuantityInDB ):
     receiptContents.insert(END, MedName+space(MedName,15)+Quantity+space(Quantity,5)+PriceFromDB+"\n")
 
+def DeliveryUI():
+    global labelClientID,entryClientID,labelAddress,EntryAddress
+    labelClientID = Label(GUI,text="Enter Client-ID: ",bg="LightBlue",font=("Arial", 14),relief="ridge")
+    labelClientID.place(x=620,y=320)
+    entryClientID=Entry(GUI , font=("Times", 20),width=9)
+    entryClientID.place(x=620,y=350)
+
+    labelAddress = Label(GUI,text="or Enter Address: ",bg="LightBlue",font=("Arial", 14),relief="ridge")
+    labelAddress.place(x=620,y=400)
+    EntryAddress=Entry(GUI , font=("Times", 20),width=12)
+    EntryAddress.place(x=620,y=430)
+
 
 def MakeReceipt(): #construct receipt object
   OrderList=receiptContents.get("2.0",END).split("\n")[:-2] #Make list of lines starting from line2 > item:quantiy:price
@@ -433,10 +486,26 @@ def MakeReceipt(): #construct receipt object
   receipt.quantities.clear() #######
   receipt.prices.clear()    #######
   
-  if (PaymentType.get()==1):
+  if (PaymentType.get()==1):  ###### cash or visa ??
     receipt.SetPaymentType("Cash")
-  else:
+  elif(PaymentType.get()==2):
      receipt.SetPaymentType("Visa")
+
+     
+
+  if (OrderType.get()==1): ## in store or delivery ?
+    receipt.SetType("In-Store")
+  elif(OrderType.get()==2):
+    if(EntryAddress.get()!=" "):
+      receipt.SetDeliveryAddress( EntryAddress.get() ) # set address entered manually
+    else:
+      receipt.SetType("Delivery")
+      clientdb=ClientDatabase()
+      receipt.SetDeliveryAddress( clientdb.GetClientAddress(entryClientID.get()) )  # setting delivery address with client id given
+      receipt.SetClientID(entryClientID.get()) 
+
+ 
+     
 
   for i in range(0,len(OrderList)): # add items to receipt object
     item=OrderList[i].split()[0]
@@ -454,12 +523,17 @@ def GenerateReceipt(receipt,receiptlength): # make file for receipt and preview 
     receiptfile.write("    Group25 Pharmacy\n")
     receiptfile.write("========================\n")
     receiptfile.write("       receipt#"+str(receipt.receiptnum)+"\n")
-    receiptfile.write("Payment: "+receipt.PaymentType+"\n")
+    receiptfile.write("Payment: "+str(receipt.PaymentType)+"\n")
+
+    if (receipt.DeliveryAddress!=""):
+      receiptfile.write("Address: "+str(receipt.DeliveryAddress)+"\n")
+
     
     receiptfile.write("========================\n")
 
+
+
     receiptfile.write("Item           Q   Price\n")
-    
     receiptfile.write("------------------------\n")
     for i in range(0,receiptlength): ## write all items in receipt
       item=receipt.items[i]
@@ -476,6 +550,8 @@ def GenerateReceipt(receipt,receiptlength): # make file for receipt and preview 
     
     receiptfile.write("Thank You For Your Visit!\n")
     receiptfile.write("   "+str(datetime.datetime.now())[:16]+"\n")
+
+
 
  with open("receipt.txt", "r") as receiptfile:
     ReceiptWindow = Tk()
@@ -524,10 +600,48 @@ def ProfitButtons():
     text1 = Text(master=GUI, height=1, width=10,font=("Arial",12))
     text2 = Text(master=GUI, height=1, width=10,font=("Arial",12))
 
+
 ####################################
 ####################################
 ####################################
-  
+
+def AddClientUI():
+    global label9,label10,labe11,entry99,entry100,entry111,ButtonAddClient
+    DestroyAll()
+
+    label9= Label(GUI,text="Name",    bg="LightBlue",fg="white",font=("Times", 20),width=7,relief="ridge")
+    label9.place(x=700,y=120)
+    label10= Label(GUI,text="Address", bg="LightBlue",fg="white",font=("Times", 20),width=7,relief="ridge")
+    label10.place(x=700,y=160)
+    labe11= Label(GUI,text="Phone",bg="LightBlue",fg="white",font=("Times", 20),width=7,relief="ridge")
+    labe11.place(x=700,y=200)
+
+    
+    entry99=Entry(GUI , font=("Times", 20))
+    entry99.place(x=850,y=120)
+    entry100=Entry(GUI , font=("Times", 20))
+    entry100.place(x=850,y=160)
+    entry111=Entry(GUI , font=("Times", 20))
+    entry111.place(x=850,y=200)
+
+    ButtonAddClient = Button(GUI, text ="Add",font=("Arial", 14),command = lambda : NewClient())
+    ButtonAddClient.configure(height=1,width=10)
+    ButtonAddClient.place(x=800,y=250)
+
+def NewClient():    
+  client=Client()
+  client.SetName(entry99.get())
+  client.SetAddress(entry100.get())
+  client.SetPhone(entry111.get())   
+  client.AddToDataBase()
+  labeldone= Label(GUI,text="Client Added Successfuly, With ID: "+str(client.ID),bg="GREY",fg="RED",font=("Times", 20)) 
+  labeldone.place(x=700,y=360)
+  GUI.after(4000,lambda:labeldone.destroy()) # done label appear and disappear after time
+
+    
+####################################
+####################################
+####################################  
 def main():
  global GUI
  GUI = Tk()
@@ -561,7 +675,7 @@ def main():
  B3.configure(height=2,width=16)
  B3.grid(row=1,column=3)
 
- B4 = Button(GUI, text ="Add Client",font=("Arial", 15), command =lambda :  DailyProfitUI())
+ B4 = Button(GUI, text ="Add Client",font=("Arial", 15), command =lambda :  AddClientUI())
  B4.configure(height=2,width=16)
  B4.grid(row=1,column=4)
 
@@ -649,6 +763,13 @@ def DestroyAll(): # make sure that area we use is clear before placing objects
         buttonvisa.destroy()
         labelPaymentType.destroy()
         receiptContents.destroy()
+        labelOrderType.destroy()
+        buttonstore.destroy()
+        buttondelivery.destroy()
+        labelClientID.destroy()
+        entryClientID.destroy()
+        labelAddress.destroy()
+        EntryAddress.destroy()
 
   except:
          pass
@@ -658,9 +779,18 @@ def DestroyAll(): # make sure that area we use is clear before placing objects
       text1.destroy()
       text2.destroy()
   except:
-
         pass
-
+  try:
+    label9.destroy()
+    label10.destroy()
+    labe11.destroy()
+    entry99.destroy()
+    entry100.destroy()
+    entry111.destroy()
+    ButtonAddClient.destroy()
+  except:
+    pass
+  
 main()
 
 
