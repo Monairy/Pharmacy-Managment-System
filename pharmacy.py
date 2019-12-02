@@ -72,12 +72,17 @@ class MedicineDatabase(Database):
   def AddMedicineToDataBase(self,medicine):
     RowIndex=str(self.GetRowIndex())
     if (medicine.name!=""): # To Avoid storing empty objects
-     self.sheet["A"+RowIndex]= medicine.name
-     self.sheet["B"+RowIndex]= medicine.barcode
-     self.sheet["C"+RowIndex]= medicine.quantity
-     self.sheet["D"+RowIndex]= medicine.expire
-     self.sheet["E"+RowIndex]= medicine.price
-     self.SaveDatabase()
+       for row in range(1,self.sheet.max_row):
+          if (str(self.sheet["A"+str(row)].value)==medicine.name):
+            ShowError("Medicine "+ medicine.name+" is already stored. Use edit mode instead.")
+            return 0
+       self.sheet["A"+RowIndex]= medicine.name
+       self.sheet["B"+RowIndex]= medicine.barcode
+       self.sheet["C"+RowIndex]= medicine.quantity
+       self.sheet["D"+RowIndex]= medicine.expire
+       self.sheet["E"+RowIndex]= medicine.price
+       self.SaveDatabase()
+       return 1
      
 ####################################
 #########_Order_Database_###########
@@ -140,6 +145,14 @@ class OrderDatabase(Database):
               MonthlyProfit = MonthlyProfit + int(self.sheet["D" + str(i)].value)
     return MonthlyProfit
   
+  def ReturnOrder(self,OrderID):
+    for row in range (1,self.sheet.max_row):
+      if (str(self.sheet["A"+str(row)].value)==str(OrderID)):
+        self.sheet["B"+str(row)]="RETURNED"
+        self.sheet["C"+str(row)]="RETURNED"
+        self.sheet["D"+str(row)]="0"
+        self.SaveDatabase()
+  
 ####################################
 ##########_Clients_DB_############
 ####################################
@@ -187,7 +200,8 @@ class Medicine:
     self.price=Price    
  def AddToDataBase(self):
     DB=MedicineDatabase()
-    DB.AddMedicineToDataBase(self)
+    return DB.AddMedicineToDataBase(self)
+    
 
     
 ####################################
@@ -227,7 +241,8 @@ class Receipt(): # 3 lists items:quantities:prices
     return str(total)
   def AddToDataBase(self):
      DB=OrderDatabase()
-     DB.AddOrderToDataBase(self)  
+     DB.AddOrderToDataBase(self)
+
 
 
 ####################################
@@ -310,10 +325,11 @@ def NewMedicine():
   Med.SetQuantity(entry3.get())   
   Med.SetExpire(entry4.get())   
   Med.SetPrice(entry5.get())
-  Med.AddToDataBase()
-  labeldone= Label(GUI,text="Medicine Added Successfuly",bg="GREY",fg="RED",font=("Times", 20)) 
-  labeldone.place(x=0,y=360)
-  GUI.after(2000,lambda:labeldone.destroy()) # done label appear and disappear after time
+  Flag=Med.AddToDataBase()
+  if (Flag!=0):
+      labeldone= Label(GUI,text="Medicine Added Successfuly",bg="GREY",fg="RED",font=("Times", 20)) 
+      labeldone.place(x=0,y=360)
+      GUI.after(2000,lambda:labeldone.destroy()) # done label appear and disappear after time
 
 ####################################
 ########_Edit_Medicine_#############
@@ -643,7 +659,30 @@ def NewClient():
     
 ####################################
 ####################################
-####################################  
+####################################
+
+def ReturnOrderUI():
+    DestroyAll()
+    global label1,entry2,Button1
+    label1= Label(GUI,text="Enter Order ID: ",bg="LightBlue",fg="white",font=("Times", 18),width=15,relief="ridge")
+    label1.place(x=760,y=120)
+    
+    entry2=Entry(GUI , font=("Times", 20),width=13)
+    entry2.place(x=770,y=160)
+
+        
+    Button1 = Button(GUI, text ="Return",font=("Arial", 14),command = lambda : ReturnOrder())
+    Button1.configure(height=1,width=14)
+    Button1.place(x=780,y=200)
+
+def ReturnOrder():
+  DB=OrderDatabase()
+  DB.ReturnOrder(entry2.get())
+  
+  labeldone= Label(GUI,text="Order Returned Successfully ",bg="GREY",fg="RED",font=("Times", 20)) 
+  labeldone.place(x=700,y=360)
+  GUI.after(4000,lambda:labeldone.destroy())
+  
 def main():
  global GUI
  GUI = Tk()
@@ -664,11 +703,12 @@ def main():
  global OrderType
  OrderType = IntVar()
 
- labelbanner= Label(GUI,text="Pharmacy Managment System",bg="LightBlue",fg="White",font=("Times", 30),relief="ridge")
- labelbanner.grid(columnspan=7,padx=500)
 
+ photo=PhotoImage(file = "1.png")
+ labelbanner= Label(GUI,text="Pharmacy Management System",bg="LightBlue",fg="white",font=("Times", 30),relief="ridge")
+ labelbanner.grid(columnspan=7,padx=500,sticky='ew')
 
- B0 = Button(GUI, text ="Add New Medicine", font=("Arial", 15),command = lambda : AddMedicineUI())
+ B0 = Button(GUI, text ="Add New Medicine",font=("Arial", 15),command = lambda : AddMedicineUI())
  B0.configure(height=2,width=16)
  B0.grid(row=1,column=0)
 
@@ -688,7 +728,7 @@ def main():
  B4.configure(height=2,width=16)
  B4.grid(row=1,column=4)
 
- B5 = Button(GUI, text ="Return Medicine",font=("Arial", 15), command =lambda :  AddMedicineUI())
+ B5 = Button(GUI, text ="Return Order",font=("Arial", 15), command =lambda :  ReturnOrderUI())
  B5.configure(height=2,width=16)
  B5.grid(row=1,column=5)
 
@@ -696,7 +736,7 @@ def main():
  B6.configure(height=2,width=16)
  B6.grid(row=1,column=6)
 
- labelfooter= Label(GUI,text="Version 1.00",bg="grey",font=("Times", 14))
+ labelfooter= Label(GUI,text="Version 1.00",bg="Grey",font=("Times", 14))
  labelfooter.place(x=700,y=600)
 
  
@@ -974,12 +1014,18 @@ def DestroyAll(): # make sure that area we use is clear before placing objects
   except:
          pass
   try:
-      Button1.destroy()
+      Button1.destroy() ##add client
       Button2.destroy()
       text1.destroy()
       text2.destroy()
   except:
         pass
+  try:
+    label1.destroy() #return order
+    entry2.destroy()
+    Button1.destroy()
+  except:
+    pass
   try:
     label9.destroy()
     label10.destroy()
@@ -1015,6 +1061,20 @@ def DestroyAll(): # make sure that area we use is clear before placing objects
     info_display.destroy()
   except:
     pass
+
+class FullScreenApp(object):
+    def __init__(self, master, **kwargs):
+        self.master=master
+        pad=3
+        self._geom='200x200+0+0'
+        master.geometry("{0}x{1}+0+0".format(
+            master.winfo_screenwidth()-pad, master.winfo_screenheight()-pad))
+        master.bind('<Escape>',self.toggle_geom)            
+    def toggle_geom(self,event):
+        geom=self.master.winfo_geometry()
+        print(geom,self._geom)
+        self.master.geometry(self._geom)
+        self._geom=geom
 
 main()
 
