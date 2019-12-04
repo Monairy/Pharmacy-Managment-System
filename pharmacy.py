@@ -202,8 +202,7 @@ class Medicine:
     DB=MedicineDatabase()
     return DB.AddMedicineToDataBase(self)
     
-
-    
+  
 ####################################
 #########_Receipt_Class_############
 ####################################   
@@ -242,7 +241,6 @@ class Receipt(): # 3 lists items:quantities:prices
   def AddToDataBase(self):
      DB=OrderDatabase()
      DB.AddOrderToDataBase(self)
-
 
 
 ####################################
@@ -795,7 +793,8 @@ class EmployeeDataBase(Database):
                 return EmployeeDectionary
 
     def AddEmployee(self,Employee):
-        Row = str(self.GetRowIndex())
+      Row = str(self.GetRowIndex())
+      if (Employee.name!=""):
         self.sheet["A" + Row] = Employee.username
         self.sheet["B" + Row] = Employee.password
         self.sheet["C" + Row] = Employee.name
@@ -803,6 +802,10 @@ class EmployeeDataBase(Database):
         self.sheet["E" + Row] = Employee.phone_number
         self.sheet["F" + Row] = Employee.address
         self.sheet["G" + Row] = Employee.age
+        self.sheet["H" + Row] = Employee.SalaryPerHr
+        self.sheet["K" + Row] = 0 #month working hours
+        self.sheet["H" + Row] = Employee.SalaryPerHr
+        self.sheet["L" + Row] = Employee.privilege
         self.SaveDatabase()
 
 ####################################
@@ -810,13 +813,15 @@ class EmployeeDataBase(Database):
 ####################################
 
 class Employee:
+    username = 'null'
     name = 'null'
     national_id = 'null'
     phone_number = 'null'
     address = 'null'
     age = 'null'
-    username = 'null'
     password = 'null'
+    SalaryPerHr=0
+    privilege='user'
 
     def SetUserName(self, UserName):
         self.username = UserName.lower()
@@ -832,11 +837,46 @@ class Employee:
         self.address = Add
     def SetAge(self, Age):
         self.age = Age
+    def SetSalary(self, salary):
+        self.SalaryPerHr = salary
+    def SetPrivilege(self, priv):
+      self.privilege=priv    
     def AddToDataBase(self):
         AdminDB = EmployeeDataBase()
         AdminDB.AddEmployee(self)
-
-
+    def CheckIn(self):
+      DB=EmployeeDataBase()
+      for row in range(1,DB.GetRowIndex()):
+        if (str(self.name).lower()==str(DB.sheet["C"+str(row)].value).lower()):
+          DB.sheet["I"+str(row)]=str(datetime.datetime.now())[:16]
+          DB.SaveDatabase()
+    def CheckOut(self):
+      DB=EmployeeDataBase()
+      for row in range(1,DB.GetRowIndex()):
+        if (str(self.name).lower()==str(DB.sheet["C"+str(row)].value).lower()):
+          DB.sheet["J"+str(row)]=str(datetime.datetime.now())[:16]
+          DB.SaveDatabase()
+          checkin=DB.sheet["I"+str(row)].value
+          checkout=DB.sheet["J"+str(row)].value
+        #  workedtoday=datetime.datetime.strptime(checkout,'%Y-%m-%d %H:%M')-datetime.datetime.strptime(checkin,'%Y-%m-%d %H:%M')
+          workedtoday=int(checkout[11:13])-int(checkin[11:13])
+          monthwork=DB.sheet["K"+str(row)].value #monthly working hours
+          DB.sheet["K"+str(row)]=monthwork+workedtoday
+          DB.SaveDatabase()
+    def CalcMonthSalary(self):
+      DB=EmployeeDataBase()
+      for row in range(1,DB.GetRowIndex()):
+        if (str(self.name).lower()==str(DB.sheet["C"+str(row)].value).lower()):
+           monthwork=int(DB.sheet["K"+str(row)].value)
+           monthsalary=int(DB.sheet["H"+str(row)].value)
+           return (monthsalary*monthwork)
+    def GetWorkedHrs(self):
+      DB=EmployeeDataBase()
+      for row in range(1,DB.GetRowIndex()):
+           if (str(self.name).lower()==str(DB.sheet["C"+str(row)].value).lower()):
+               monthwork=DB.sheet["K"+str(row)].value
+               return (monthwork)
+   
 
 def NewEmployee():
     employee = Employee()
@@ -844,13 +884,15 @@ def NewEmployee():
     employee.SetPassword(entry7.get())
     employee.SetName(entry8.get())
     employee.SetNationalId(entry9.get())
-    employee.SetAddress(entry8.get())
-    employee.SetPhoneNumber(entry10.get())
-    employee.SetAge(entry11.get())
+    employee.SetAddress(entry10.get())
+    employee.SetPhoneNumber(entry11.get())
+    employee.SetAge(entry12.get())
+    employee.SetSalary(entry13.get())
+    employee.SetPrivilege(Priv.get())
     employee.AddToDataBase()
-    employeeadded = Label(AdminGui, text="Employee Added Successfuly", bg="GREY", fg="RED", font=("Times", 20))
-    employeeadded.place(x=120, y=450)
-    GUI.after(2000,lambda:employeeadded.destroy())
+    employeeadded = Label(AdminGui, text="Employee Added Successfuly", bg="GREY", fg="Green", font=("Times", 20))
+    employeeadded.place(x=120, y=480)
+    AdminGui.after(2000,lambda:employeeadded.destroy())
 
 ############################
 ############################
@@ -874,12 +916,11 @@ def DisplayEmployeeInfo(searched_name):
     info_display.configure(state='disabled')
 
 
-
 def GetEmployeeName():
     global search_label,search_entry,Buttonseach
     DestroyAll()
 
-    search_label = Label(AdminGui, text="Name", bg="LightBlue", fg="white", font=("Times", 20), width=9, relief="ridge")
+    search_label = Label(AdminGui, text="Name", bg="Green", fg="white", font=("Times", 20), width=9, relief="ridge")
     search_label.place(x=0, y=120)
     search_entry = Entry(AdminGui, font=("Times", 20))
     search_entry.place(x=150, y=120)
@@ -887,28 +928,32 @@ def GetEmployeeName():
     Buttonseach.configure(height=1, width=10)
     Buttonseach.place(x=100, y=160)
 
-
-
+############################
+############################
+############################
+    
 def AddEmployee():
-    global label6, label7, label8, label9, labe20,labe21,labe22, entry6, entry7, entry8, entry9, entry10,entry11,entry12, AddInfo
-
+    global label6, label7, label8, label9, labe20,labe21,labe22, entry6, entry7, entry8, entry9, entry10,entry11,entry12, AddInfo,label33,entry13,buttonAdmin,buttonuser
+    global buttonAdmin,buttonuser
     DestroyAll()
 
-    label6 = Label(AdminGui, text="Username", bg="LightBlue", fg="white", font=("Times", 20), width=9, relief="ridge")
+    label6 = Label(AdminGui, text="Username", bg="Green", fg="white", font=("Times", 20), width=9, relief="ridge")
     label6.place(x=0, y=120)
-    label7 = Label(AdminGui, text="Password", bg="LightBlue", fg="white", font=("Times", 20), width=9, relief="ridge")
+    label7 = Label(AdminGui, text="Password", bg="Green", fg="white", font=("Times", 20), width=9, relief="ridge")
     label7.place(x=0, y=160)
-    label8 = Label(AdminGui, text="Name", bg="LightBlue", fg="white", font=("Times", 20), width=9, relief="ridge")
+    label8 = Label(AdminGui, text="Name", bg="Green", fg="white", font=("Times", 20), width=9, relief="ridge")
     label8.place(x=0, y=200)
-    label9 = Label(AdminGui, text="National ID", bg="LightBlue", fg="white", font=("Times", 20), width=9, relief="ridge")
+    label9 = Label(AdminGui, text="National ID", bg="Green", fg="white", font=("Times", 20), width=9, relief="ridge")
     label9.place(x=0, y=240)
-    labe20 = Label(AdminGui, text="Address", bg="LightBlue", fg="white", font=("Times", 20), width=9, relief="ridge")
+    labe20 = Label(AdminGui, text="Address", bg="Green", fg="white", font=("Times", 20), width=9, relief="ridge")
     labe20.place(x=0, y=280)
-    labe21 = Label(AdminGui, text="Phone Num", bg="LightBlue", fg="white", font=("Times", 20), width=9, relief="ridge")
+    labe21 = Label(AdminGui, text="Phone Num", bg="Green", fg="white", font=("Times", 20), width=9, relief="ridge")
     labe21.place(x=0, y=320)
-    labe22 = Label(AdminGui, text="Age", bg="LightBlue", fg="white", font=("Times", 20), width=9, relief="ridge")
+    labe22 = Label(AdminGui, text="Age", bg="Green", fg="white", font=("Times", 20), width=9, relief="ridge")
     labe22.place(x=0, y=360)
-
+    label33 = Label(AdminGui, text="Salary/Hr", bg="Green", fg="white", font=("Times", 20), width=9, relief="ridge")
+    label33.place(x=0, y=400)
+    
     entry6 = Entry(AdminGui, font=("Times", 20))
     entry6.place(x=150, y=120)
     entry7 = Entry(AdminGui, font=("Times", 20))
@@ -923,40 +968,159 @@ def AddEmployee():
     entry11.place(x=150, y=320)
     entry12 = Entry(AdminGui, font=("Times", 20))
     entry12.place(x=150, y=360)
+    entry13 = Entry(AdminGui, font=("Times", 20))
+    entry13.place(x=150, y=400)     
 
+    
+    buttonuser=Radiobutton(AdminGui,text="User", variable=Priv ,  value='user',  bg="grey",font=("Arial", 14))
+    buttonuser.place(x=250,y=440)
+    
+    buttonAdmin=Radiobutton(AdminGui,text="Administrator",variable=Priv, value='admin',bg="grey",font=("Arial", 14))
+    buttonAdmin.place(x=350,y=440)
+    
+    
     AddInfo = Button(AdminGui, text="Add", font=("Arial", 14), command=lambda: NewEmployee())
     AddInfo.configure(height=1, width=10)
-    AddInfo.place(x=100, y=400)
+    AddInfo.place(x=100, y=440)
+    
+############################
+############################
+############################
+def CheckInUI():
+    global EnterName,ListBox,ButtonCheckin,ButtonCheckOut
+    DestroyAll()
+
+    EnterName = Label(AdminGui, text="Select Employee", bg="Green", fg="white", font=("Times", 15), width=18, relief="ridge")
+    EnterName.place(x=400, y=120)
+	
+    DB=EmployeeDataBase()
+    ListBox = Listbox(AdminGui)
+    for row in range(2,DB.GetRowIndex()):
+      ListBox.insert(row,DB.sheet["C"+str(row)].value)
+    ListBox.configure(font=("Times", 15))  
+    ListBox.place(x=400,y=160)
+    
+#print (ListBox.get(ListBox.curselection()))
+    
+    ButtonCheckin = Button(AdminGui, text="Check-In", font=("Arial", 14), command=lambda: CheckIn() )
+    ButtonCheckin.configure(height=1, width=8)
+    ButtonCheckin.place(x=650, y=160)
+	
+    ButtonCheckOut = Button(AdminGui, text="Check-Out", font=("Arial", 14), command=lambda: CheckOut())
+    ButtonCheckOut.configure(height=1, width=8)
+    ButtonCheckOut.place(x=650, y=240)	
+	
+def CheckIn():
+ #try:
+  employee=Employee()
+  employee.SetName(ListBox.get(ListBox.curselection()))
+  employee.CheckIn()
+  labeldone = Label(AdminGui, text="Employee Check-In Recoreded Successfully", bg="GREY", fg="GREEN", font=("Times", 15))
+  labeldone.place(x=650, y=200)
+  AdminGui.after(2000,lambda:labeldone.destroy())
+# except:
+ #  ShowError("Please Select Employee")
+   
+def CheckOut():
+# try: 
+  employee=Employee()
+  employee.SetName(ListBox.get(ListBox.curselection()))
+  employee.CheckOut()
+  
+  labeldone = Label(AdminGui, text="Employee Check-Out Recoreded Successfully", bg="GREY", fg="GREEN", font=("Times", 15))
+  labeldone.place(x=650, y=280)
+  AdminGui.after(2000,lambda:labeldone.destroy())
+ #except:
+ #  ShowError("Please Select Employee")
 
 
+
+def WorkingHoursUI():
+  global EnterName,ListBox,Button1,Button2
+  DestroyAll()
+
+  EnterName = Label(AdminGui, text="Select Employee", bg="Green", fg="white", font=("Times", 15), width=18, relief="ridge")
+  EnterName.place(x=400, y=120)
+	
+  DB=EmployeeDataBase()
+  ListBox = Listbox(AdminGui)
+  for row in range(2,DB.GetRowIndex()):
+      ListBox.insert(row,DB.sheet["C"+str(row)].value)
+  ListBox.configure(font=("Times", 15))  
+  ListBox.place(x=400,y=160)
+
+  Button1 = Button(AdminGui, text="Current-Month Working Hours", font=("Arial", 14), command=lambda: WorkingHrs() )
+  Button1.configure(height=1, width=25)
+  Button1.place(x=650, y=160)
+	
+  Button2 = Button(AdminGui, text="Deserved Salary", font=("Arial", 14), command=lambda: CalcSalary())
+  Button2.configure(height=1, width=14)
+  Button2.place(x=650, y=240)  
+
+def WorkingHrs():
+  employee=Employee()
+  employee.SetName(ListBox.get(ListBox.curselection()))
+  hrs = employee.GetWorkedHrs()
+
+  labelhours = Label(AdminGui, text="Employee Worked "+str(hrs)+" Hrs This Month",bg="GREY", fg="Blue", font=("Times", 15))
+  labelhours.place(x=650, y=200)
+  AdminGui.after(5000,lambda:labelhours.destroy())
+
+def CalcSalary():
+  employee=Employee()
+  employee.SetName(ListBox.get(ListBox.curselection())) 
+  salary = employee.CalcMonthSalary()
+  labelsalary = Label(AdminGui, text="Employee Deserves "+str(salary)+" L.E This Month",bg="GREY", fg="Blue", font=("Times", 15))
+  labelsalary.place(x=650, y=280)
+  AdminGui.after(5000,lambda:labelsalary.destroy())
+  
+############################
+############################
+############################
+   
 def AdminUi():
+    GUI.destroy()
+    
     global AdminGui
     AdminGui = Tk()
     
-    GUI.destroy()
-
+    global Priv
+    Priv = StringVar()
 
     AdminGui.title("Adminstration mode")
     AdminGui.configure(bg='GREY')
     AdminGui.minsize(1400, 650)
     AdminGui.resizable(0, 0)
-    banner = Label(AdminGui, text="Adminstration mode", bg="Green", fg="white", font=("Times", 30))
+    banner = Label(AdminGui, text="Adminstration mode", bg="Green", fg="white", font=("Times", 30),relief="ridge")
     banner.grid(columnspan=7, padx=500)
 
-    global employeeadded
-    employeeadded = Label(AdminGui, text="Employee Added Successfuly", bg="GREY", fg="RED", font=("Times", 20))
+    
+ 
 
-    Bot1 = Button(AdminGui, text="Add New Employee", font=("Arial", 10), command=lambda: AddEmployee())
-    Bot1.configure(height=3, width=20)
+    Bot1 = Button(AdminGui, text="Add New Employee", font=("Arial", 15), command=lambda: AddEmployee())
+    Bot1.configure(height=2, width=16)
     Bot1.grid(row=1, column=0)
 
-    Bot2 = Button(AdminGui, text="Get Employee Information", font=("Arial", 10), command=lambda: GetEmployeeName())
-    Bot2.configure(height=3, width=20)
+    Bot2 = Button(AdminGui, text="Employee Information", font=("Arial", 14), command=lambda: GetEmployeeName())
+    Bot2.configure(height=2, width=17)
     Bot2.grid(row=1, column=1)
-
-    Bot3 = Button(AdminGui, text="Back", font=("Arial", 10), command=lambda:  main())
-    Bot3.configure(height=3, width=20)
+	
+    Bot3 = Button(AdminGui, text="Check-in/out", font=("Arial", 15), command=lambda: CheckInUI())
+    Bot3.configure(height=2, width=16)
     Bot3.grid(row=1, column=2)
+
+
+    Bot4 = Button(AdminGui, text="Working Hours", font=("Arial", 15), command=lambda: WorkingHoursUI())
+    Bot4.configure(height=2, width=16)
+    Bot4.grid(row=1, column=3)
+
+    Bot5 = Button(AdminGui, text="Sales", font=("Arial", 15), command=lambda: WorkingHoursUI())
+    Bot5.configure(height=2, width=16)
+    Bot5.grid(row=1, column=4)
+
+    Bot6 = Button(AdminGui, text="Back", font=("Arial", 15), command=lambda:  main())
+    Bot6.configure(height=2, width=16)
+    Bot6.grid(row=1, column=5)
 
     AdminGui.mainloop()
 
@@ -1026,7 +1190,7 @@ def DestroyAll(): # make sure that area we use is clear before placing objects
     Button1.destroy()
   except:
     pass
-  try:
+  try:  #Add Client
     label9.destroy()
     label10.destroy()
     labe11.destroy()
@@ -1036,7 +1200,7 @@ def DestroyAll(): # make sure that area we use is clear before placing objects
     ButtonAddClient.destroy()
   except:
     pass
-  try:
+  try: #add employee
         label6.destroy()
         label7.destroy()
         label8.destroy()
@@ -1044,6 +1208,7 @@ def DestroyAll(): # make sure that area we use is clear before placing objects
         labe20.destroy()
         labe21.destroy()
         labe22.destroy()
+        label33.destroy()
         entry6.destroy()
         entry7.destroy()
         entry8.destroy()
@@ -1051,6 +1216,7 @@ def DestroyAll(): # make sure that area we use is clear before placing objects
         entry10.destroy()
         entry11.destroy()
         entry12.destroy()
+        entry13.destroy()
         AddInfo.destroy()
   except:
         pass
@@ -1061,7 +1227,13 @@ def DestroyAll(): # make sure that area we use is clear before placing objects
     info_display.destroy()
   except:
     pass
-
+  try: #checkin
+     EnterName.destroy()
+     ListBox.destroy()
+     ButtonCheckin.destroy()
+     ButtonCheckOut.destroy()
+  except:
+    pass
 class FullScreenApp(object):
     def __init__(self, master, **kwargs):
         self.master=master
