@@ -325,7 +325,7 @@ def NewMedicine():
   Med.SetPrice(entry5.get())
   Flag=Med.AddToDataBase()
   if (Flag!=0):
-      labeldone= Label(GUI,text="Medicine Added Successfuly",bg="GREY",fg="RED",font=("Times", 20)) 
+      labeldone= Label(GUI,text="Medicine Added Successfuly",bg="#d2d2d2",fg="RED",font=("Times", 20)) 
       labeldone.place(x=0,y=360)
       GUI.after(2000,lambda:labeldone.destroy()) # done label appear and disappear after time
 
@@ -393,28 +393,28 @@ def EditMedicine(arg): # execute action depending on arg, 1:barcode, 2:quantity,
     if (arg==1):
       DB.EditMedicineBarcode(entry6.get(),entry7.get()) # EditMedicineBarcode(name,barcode)
 
-      label= Label(GUI,text="Barcode Modified Successfuly",bg="GREY",fg="RED",font=("Times", 15))
+      label= Label(GUI,text="Barcode Modified Successfuly",bg="#d2d2d2",fg="RED",font=("Times", 15))
       label.place(x=200,y=400)
       GUI.after(2000,lambda:label.destroy())     # label appear and disappear after time
 
     if (arg==2):
       DB.EditMedicineQuantity(entry6.get(),entry8.get()) # EditMedicineQuantity(name,quantity)
 
-      label= Label(GUI,text="Quantity Modified Successfuly",bg="GREY",fg="RED",font=("Times", 15))
+      label= Label(GUI,text="Quantity Modified Successfuly",bg="#d2d2d2",fg="RED",font=("Times", 15))
       label.place(x=400,y=400)
       GUI.after(2000,lambda:label.destroy())    
 
     if (arg==3):
       DB.EditMedicineExpire(entry6.get(),entry9.get()) # EditMedicineExpire(name,expire)
 
-      label= Label(GUI,text="Expire Modified Successfuly",bg="GREY",fg="RED",font=("Times", 15))
+      label= Label(GUI,text="Expire Modified Successfuly",bg="#d2d2d2",fg="RED",font=("Times", 15))
       label.place(x=600,y=400)
       GUI.after(2000,lambda:label.destroy())
 
     if (arg==4):
       DB.EditMedicinePrice(entry6.get(),entry10.get()) # EditMedicinePrice(name,price)
 
-      label= Label(GUI,text="Price Modified Successfuly",bg="GREY",fg="RED",font=("Times", 15))
+      label= Label(GUI,text="Price Modified Successfuly",bg="#d2d2d2",fg="RED",font=("Times", 15))
       label.place(x=800,y=400)
       GUI.after(2000,lambda:label.destroy())
 
@@ -447,18 +447,18 @@ def MakeReceiptUI():
     labelPaymentType = Label(GUI,text="Choose Payment Type: ",bg="LightBlue",font=("Arial", 14),relief="ridge")
     labelPaymentType.place(x=400,y=250)
     
-    buttoncash=Radiobutton(GUI, text="Cash",variable=PaymentType, value=1,bg="grey",font=("Arial", 14))
+    buttoncash=Radiobutton(GUI, text="Cash",variable=PaymentType, value=1,bg="#d2d2d2",font=("Arial", 14))
     buttoncash.place(x=420,y=280)
-    buttonvisa=Radiobutton(GUI,text="Visa",variable=PaymentType, value=2,bg="grey",font=("Arial", 14))
+    buttonvisa=Radiobutton(GUI,text="Visa",variable=PaymentType, value=2,bg="#d2d2d2",font=("Arial", 14))
     buttonvisa.place(x=520,y=280)
 
 
 
     labelOrderType = Label(GUI,text="Choose Oder Type: ",bg="LightBlue",font=("Arial", 14),relief="ridge") ## In-Store Or delivery
     labelOrderType.place(x=620,y=250)
-    buttonstore=Radiobutton(GUI, text="In-Store",variable=OrderType, value=1,bg="grey",font=("Arial", 14))
+    buttonstore=Radiobutton(GUI, text="In-Store",variable=OrderType, value=1,bg="#d2d2d2",font=("Arial", 14))
     buttonstore.place(x=620,y=280)
-    buttondelivery=Radiobutton(GUI,text="Delivery",variable=OrderType, value=2,bg="grey",font=("Arial", 14),command=lambda:DeliveryUI())
+    buttondelivery=Radiobutton(GUI,text="Delivery",variable=OrderType, value=2,bg="#d2d2d2",font=("Arial", 14),command=lambda:DeliveryUI())
     buttondelivery.place(x=720,y=280)
    
     ######################################
@@ -650,7 +650,7 @@ def NewClient():
   client.SetAddress(entry100.get())
   client.SetPhone(entry111.get())   
   client.AddToDataBase()
-  labeldone= Label(GUI,text="Client Added Successfuly, With ID: "+str(client.ID),bg="GREY",fg="RED",font=("Times", 20)) 
+  labeldone= Label(GUI,text="Client Added Successfuly, With ID: "+str(client.ID),bg="#d2d2d2",fg="RED",font=("Times", 20)) 
   labeldone.place(x=700,y=360)
   GUI.after(4000,lambda:labeldone.destroy()) # done label appear and disappear after time
 
@@ -677,7 +677,7 @@ def ReturnOrder():
   DB=OrderDatabase()
   DB.ReturnOrder(entry2.get())
   
-  labeldone= Label(GUI,text="Order Returned Successfully ",bg="GREY",fg="RED",font=("Times", 20)) 
+  labeldone= Label(GUI,text="Order Returned Successfully ",bg="#d2d2d2",fg="RED",font=("Times", 20)) 
   labeldone.place(x=700,y=360)
   GUI.after(4000,lambda:labeldone.destroy())
   
@@ -685,7 +685,7 @@ def main():
  global GUI
  GUI = Tk()
  GUI.title("Pharmacy Managment System")
- GUI.configure(bg='Grey')
+ GUI.configure(bg='#d2d2d2')
  GUI.minsize(1400,650)
  GUI.resizable(0,0)
 
@@ -703,7 +703,7 @@ def main():
 
 
  photo=PhotoImage(file = "1.png")
- labelbanner= Label(GUI,text="Pharmacy Management System",bg="LightBlue",fg="white",font=("Times", 30),relief="ridge")
+ labelbanner= Label(GUI,image=photo,bg='#d2d2d2',relief="ridge")
  labelbanner.grid(columnspan=7,padx=500,sticky='ew')
 
  B0 = Button(GUI, text ="Add New Medicine",font=("Arial", 15),command = lambda : AddMedicineUI())
@@ -734,7 +734,7 @@ def main():
  B6.configure(height=2,width=16)
  B6.grid(row=1,column=6)
 
- labelfooter= Label(GUI,text="Version 1.00",bg="Grey",font=("Times", 14))
+ labelfooter= Label(GUI,text="Version 1.00",bg="#d2d2d2",font=("Times", 14))
  labelfooter.place(x=700,y=600)
 
  
@@ -746,20 +746,20 @@ def login():
   global LoginScreen
   LoginScreen = Tk()
   LoginScreen.title("Pharmacy Managment System")
-  LoginScreen.configure(bg='GREY')
+  LoginScreen.configure(bg='#d2d2d2')
   LoginScreen.minsize(1400,650)
   LoginScreen.resizable(0,0)
   
   labelbanner= Label(LoginScreen,text="Login To Continue",bg="RED",fg="BLACK",font=("Times", 30))
   labelbanner.grid(columnspan=7,padx=500)
   
-  usernameLabel=Label(LoginScreen, text=" Username: ", width=7, bg="grey",font=("Times",20))
+  usernameLabel=Label(LoginScreen, text=" Username: ", width=7, bg="#d2d2d2",font=("Times",20))
   usernameLabel.place(x=350,y=150)
   usernameEntry = Entry(LoginScreen,font=("Times", 20))
   usernameEntry.place(x=550,y=150)
   
   
-  PasswordLabel=Label(LoginScreen, text="Password:" , width=7, bg="grey",font=("Times",20))
+  PasswordLabel=Label(LoginScreen, text="Password:" , width=7, bg="#d2d2d2",font=("Times",20))
   PasswordLabel.place(x=350,y=250)
   passwordEntry = Entry(LoginScreen, font=("Times", 20), show= '*')
   passwordEntry.place(x=550,y=250)
@@ -890,7 +890,7 @@ def NewEmployee():
     employee.SetSalary(entry13.get())
     employee.SetPrivilege(Priv.get())
     employee.AddToDataBase()
-    employeeadded = Label(AdminGui, text="Employee Added Successfuly", bg="GREY", fg="Green", font=("Times", 20))
+    employeeadded = Label(AdminGui, text="Employee Added Successfuly", bg="#d2d2d2", fg="Green", font=("Times", 20))
     employeeadded.place(x=120, y=480)
     AdminGui.after(2000,lambda:employeeadded.destroy())
 
@@ -972,10 +972,10 @@ def AddEmployee():
     entry13.place(x=150, y=400)     
 
     
-    buttonuser=Radiobutton(AdminGui,text="User", variable=Priv ,  value='user',  bg="grey",font=("Arial", 14))
+    buttonuser=Radiobutton(AdminGui,text="User", variable=Priv ,  value='user',  bg="#d2d2d2",font=("Arial", 14))
     buttonuser.place(x=250,y=440)
     
-    buttonAdmin=Radiobutton(AdminGui,text="Administrator",variable=Priv, value='admin',bg="grey",font=("Arial", 14))
+    buttonAdmin=Radiobutton(AdminGui,text="Administrator",variable=Priv, value='admin',bg="#d2d2d2",font=("Arial", 14))
     buttonAdmin.place(x=350,y=440)
     
     
@@ -1015,7 +1015,7 @@ def CheckIn():
   employee=Employee()
   employee.SetName(ListBox.get(ListBox.curselection()))
   employee.CheckIn()
-  labeldone = Label(AdminGui, text="Employee Check-In Recoreded Successfully", bg="GREY", fg="GREEN", font=("Times", 15))
+  labeldone = Label(AdminGui, text="Employee Check-In Recoreded Successfully", bg="#d2d2d2", fg="GREEN", font=("Times", 15))
   labeldone.place(x=650, y=200)
   AdminGui.after(2000,lambda:labeldone.destroy())
 # except:
@@ -1027,7 +1027,7 @@ def CheckOut():
   employee.SetName(ListBox.get(ListBox.curselection()))
   employee.CheckOut()
   
-  labeldone = Label(AdminGui, text="Employee Check-Out Recoreded Successfully", bg="GREY", fg="GREEN", font=("Times", 15))
+  labeldone = Label(AdminGui, text="Employee Check-Out Recoreded Successfully", bg="#d2d2d2", fg="GREEN", font=("Times", 15))
   labeldone.place(x=650, y=280)
   AdminGui.after(2000,lambda:labeldone.destroy())
  #except:
@@ -1062,7 +1062,7 @@ def WorkingHrs():
   employee.SetName(ListBox.get(ListBox.curselection()))
   hrs = employee.GetWorkedHrs()
 
-  labelhours = Label(AdminGui, text="Employee Worked "+str(hrs)+" Hrs This Month",bg="GREY", fg="Blue", font=("Times", 15))
+  labelhours = Label(AdminGui, text="Employee Worked "+str(hrs)+" Hrs This Month",bg="#d2d2d2", fg="Blue", font=("Times", 15))
   labelhours.place(x=650, y=200)
   AdminGui.after(5000,lambda:labelhours.destroy())
 
@@ -1070,7 +1070,7 @@ def CalcSalary():
   employee=Employee()
   employee.SetName(ListBox.get(ListBox.curselection())) 
   salary = employee.CalcMonthSalary()
-  labelsalary = Label(AdminGui, text="Employee Deserves "+str(salary)+" L.E This Month",bg="GREY", fg="Blue", font=("Times", 15))
+  labelsalary = Label(AdminGui, text="Employee Deserves "+str(salary)+" L.E This Month",bg="#d2d2d2", fg="Blue", font=("Times", 15))
   labelsalary.place(x=650, y=280)
   AdminGui.after(5000,lambda:labelsalary.destroy())
   
@@ -1088,7 +1088,7 @@ def AdminUi():
     Priv = StringVar()
 
     AdminGui.title("Adminstration mode")
-    AdminGui.configure(bg='GREY')
+    AdminGui.configure(bg='#d2d2d2')
     AdminGui.minsize(1400, 650)
     AdminGui.resizable(0, 0)
     banner = Label(AdminGui, text="Adminstration mode", bg="Green", fg="white", font=("Times", 30),relief="ridge")
@@ -1262,4 +1262,3 @@ receipt.CalcSum()
 for key,value in Receipt.items.items():
     print (key[0])'''
         
-
