@@ -681,28 +681,37 @@ def ReturnOrder():
   labeldone.place(x=700,y=360)
   GUI.after(4000,lambda:labeldone.destroy())
   
+
 def main():
+ try:
+   AdminGui.destroy()
+ except:
+   try:
+     LoginScreen.destroy()
+   except:
+     pass
+  
+  
  global GUI
  GUI = Tk()
  GUI.title("Pharmacy Managment System")
  GUI.configure(bg='#d2d2d2')
  GUI.minsize(1400,650)
  GUI.resizable(0,0)
-
- try:
-   AdminGui.destroy()
- except:
-   pass
+ photo=PhotoImage(file = "1.png")
   
 # LoginScreen.destroy()
 
- global PaymentType
- PaymentType = IntVar() ###############
- global OrderType
- OrderType = IntVar()
+ try:
+   global PaymentType
+   PaymentType = IntVar() ###############
+   global OrderType
+   OrderType = IntVar()
+ except:
+   pass
 
 
- photo=PhotoImage(file = "1.png")
+ 
  labelbanner= Label(GUI,image=photo,bg='#d2d2d2',relief="ridge")
  labelbanner.grid(columnspan=7,padx=500,sticky='ew')
 
@@ -730,7 +739,7 @@ def main():
  B5.configure(height=2,width=16)
  B5.grid(row=1,column=5)
 
- B6 = Button(GUI, text ="Administration",font=("Arial", 15), command =lambda :  AdminUi())
+ B6 = Button(GUI, text ="Administration",font=("Arial", 15), command =lambda :  Adminlogin())
  B6.configure(height=2,width=16)
  B6.grid(row=1,column=6)
 
@@ -807,7 +816,14 @@ class EmployeeDataBase(Database):
         self.sheet["H" + Row] = Employee.SalaryPerHr
         self.sheet["L" + Row] = Employee.privilege
         self.SaveDatabase()
-
+    def checkLogin (self,systemUserName, systemUserPass):     
+      for row in range(1,self.sheet.max_row+1): # loop over rows
+         if(str(self.sheet["A"+str(row)].value).lower()==systemUserName.lower() and str(self.sheet["B"+str(row)].value).lower()==systemUserPass.lower()):
+            return TRUE
+    def checkAdminLogin(self,systemUserName, systemUserPass):     
+      for row in range(1,self.sheet.max_row+1): # loop over rows
+         if(str(self.sheet["A"+str(row)].value).lower()==systemUserName.lower() and str(self.sheet["B"+str(row)].value).lower()==systemUserPass.lower() and str(self.sheet["L"+str(row)].value)=='admin') :
+           return TRUE
 ####################################
 ####################################
 ####################################
@@ -1011,18 +1027,18 @@ def CheckInUI():
     ButtonCheckOut.place(x=650, y=240)	
 	
 def CheckIn():
- #try:
+ try:
   employee=Employee()
   employee.SetName(ListBox.get(ListBox.curselection()))
   employee.CheckIn()
   labeldone = Label(AdminGui, text="Employee Check-In Recoreded Successfully", bg="#d2d2d2", fg="GREEN", font=("Times", 15))
   labeldone.place(x=650, y=200)
   AdminGui.after(2000,lambda:labeldone.destroy())
-# except:
- #  ShowError("Please Select Employee")
+ except:
+   ShowError("Please Select Employee")
    
 def CheckOut():
-# try: 
+ try: 
   employee=Employee()
   employee.SetName(ListBox.get(ListBox.curselection()))
   employee.CheckOut()
@@ -1030,8 +1046,8 @@ def CheckOut():
   labeldone = Label(AdminGui, text="Employee Check-Out Recoreded Successfully", bg="#d2d2d2", fg="GREEN", font=("Times", 15))
   labeldone.place(x=650, y=280)
   AdminGui.after(2000,lambda:labeldone.destroy())
- #except:
- #  ShowError("Please Select Employee")
+ except:
+   ShowError("Please Select Employee")
 
 
 
@@ -1058,6 +1074,7 @@ def WorkingHoursUI():
   Button2.place(x=650, y=240)  
 
 def WorkingHrs():
+ try: 
   employee=Employee()
   employee.SetName(ListBox.get(ListBox.curselection()))
   hrs = employee.GetWorkedHrs()
@@ -1065,21 +1082,51 @@ def WorkingHrs():
   labelhours = Label(AdminGui, text="Employee Worked "+str(hrs)+" Hrs This Month",bg="#d2d2d2", fg="Blue", font=("Times", 15))
   labelhours.place(x=650, y=200)
   AdminGui.after(5000,lambda:labelhours.destroy())
-
+ except:
+   ShowError("Please Select Employee")
 def CalcSalary():
+ try:   
   employee=Employee()
   employee.SetName(ListBox.get(ListBox.curselection())) 
   salary = employee.CalcMonthSalary()
   labelsalary = Label(AdminGui, text="Employee Deserves "+str(salary)+" L.E This Month",bg="#d2d2d2", fg="Blue", font=("Times", 15))
   labelsalary.place(x=650, y=280)
   AdminGui.after(5000,lambda:labelsalary.destroy())
-  
-############################
-############################
-############################
+ except:
+   ShowError("Please Select Employee")
    
+############################
+############################
+############################
+  
+def DailyProfitUI():
+    ooDB = OrderDatabase()
+    profit = ooDB.DailyProfit()
+
+    text1.place(x=600,y=200)
+    text1.insert(END,str(profit)+"LE")
+def MonthlyProfitUI():
+    ooDB = OrderDatabase()
+    profit = ooDB.MonthlyProfit()
+
+    text2.place(x=800,y=200)
+    text2.insert(END, str(profit)+"LE")
+def salesbuttons():
+    global Button1, Button2,text2,text1
+    DestroyAll()
+    Button1 = Button(AdminGui, text ="Daily profit",font=("Arial", 12),command=lambda: DailyProfitUI())
+    Button1.configure(height=2, width=16)
+    Button1.place(x=570, y=150)
+    Button2 = Button(AdminGui, text="Monthly profit", font=("Arial", 12), command=lambda: MonthlyProfitUI())
+    Button2.configure(height=2, width=16)
+    Button2.place(x=770,y=150)
+    text1 = Text(master=AdminGui, height=1, width=10,font=("Arial",12))
+    text2 = Text(master=AdminGui, height=1, width=10,font=("Arial",12))
+############################
+############################
+############################   
 def AdminUi():
-    GUI.destroy()
+    LoginScreen.destroy()
     
     global AdminGui
     AdminGui = Tk()
@@ -1093,8 +1140,6 @@ def AdminUi():
     AdminGui.resizable(0, 0)
     banner = Label(AdminGui, text="Adminstration mode", bg="Green", fg="white", font=("Times", 30),relief="ridge")
     banner.grid(columnspan=7, padx=500)
-
-    
  
 
     Bot1 = Button(AdminGui, text="Add New Employee", font=("Arial", 15), command=lambda: AddEmployee())
@@ -1114,7 +1159,7 @@ def AdminUi():
     Bot4.configure(height=2, width=16)
     Bot4.grid(row=1, column=3)
 
-    Bot5 = Button(AdminGui, text="Sales", font=("Arial", 15), command=lambda: WorkingHoursUI())
+    Bot5 = Button(AdminGui, text="Sales", font=("Arial", 15), command=lambda: salesbuttons())
     Bot5.configure(height=2, width=16)
     Bot5.grid(row=1, column=4)
 
@@ -1123,7 +1168,6 @@ def AdminUi():
     Bot6.grid(row=1, column=5)
 
     AdminGui.mainloop()
-
 
 
 
@@ -1217,6 +1261,8 @@ def DestroyAll(): # make sure that area we use is clear before placing objects
         entry11.destroy()
         entry12.destroy()
         entry13.destroy()
+        buttonuser.destroy()
+        buttonAdmin.destroy()
         AddInfo.destroy()
   except:
         pass
@@ -1234,6 +1280,7 @@ def DestroyAll(): # make sure that area we use is clear before placing objects
      ButtonCheckOut.destroy()
   except:
     pass
+  
 class FullScreenApp(object):
     def __init__(self, master, **kwargs):
         self.master=master
@@ -1247,8 +1294,82 @@ class FullScreenApp(object):
         print(geom,self._geom)
         self.master.geometry(self._geom)
         self._geom=geom
+        
+def newLogin():
+  DB2 = EmployeeDataBase()
+  if(DB2.checkLogin(usernameEntry.get(), passwordEntry.get()) == True):
+   successfulLabel= Label(LoginScreen,text="Successful Login",bg="#d2d2d2",fg="GREEN",font=("Times", 15))
+   successfulLabel.place(x=800,y=400)
+   main()
+  else:
+   failLabel= Label(LoginScreen,text="Wrong Username or Password",bg="#d2d2d2",fg="RED",font=("Times", 20))
+   failLabel.place(x=800,y=350)
+   
+def login():
+  global LoginScreen, usernameEntry, passwordEntry
+  LoginScreen = Tk()
+  LoginScreen.title("Pharmacy Managment System")
+  LoginScreen.configure(bg='#d2d2d2')
+  LoginScreen.minsize(1400,650)
+  LoginScreen.resizable(0,0)
+  
+  labelbanner= Label(LoginScreen,text="Login To Continue",bg="RED",fg="BLACK",font=("Times", 30),relief="ridge")
+  labelbanner.grid(columnspan=7,padx=550)
 
-main()
+  usernameLabel=Label(LoginScreen, text=" Username: ", width=7, bg="#d2d2d2",font=("Times",20))
+  usernameLabel.place(x=350,y=150)
+  usernameEntry = Entry(LoginScreen,font=("Times", 20))
+  usernameEntry.place(x=550,y=150)
+  
+  PasswordLabel=Label(LoginScreen, text="Password:" , width=7, bg="#d2d2d2",font=("Times",20))
+  PasswordLabel.place(x=350,y=250)
+  passwordEntry = Entry(LoginScreen, font=("Times", 20), show= '*')
+  passwordEntry.place(x=550,y=250)
+
+  loginbutton= Button(LoginScreen, text ="Login",font=("Arial", 20), command =lambda : newLogin())
+  loginbutton.place(x=600,y=400)
+  LoginScreen.mainloop()
+
+def newAdminLogin():
+  DB2 = EmployeeDataBase()
+  if(DB2.checkAdminLogin(usernameEntry.get(), passwordEntry.get()) == True):
+   successfulLabel= Label(LoginScreen,text="Successful Login",bg="#d2d2d2",fg="GREEN",font=("Times", 15))
+   successfulLabel.place(x=800,y=400)
+   AdminUi()
+  else:
+   failLabel= Label(LoginScreen,text="Wrong Username/Password or Not Admin",bg="#d2d2d2",fg="RED",font=("Times", 20))
+   failLabel.place(x=800,y=350)
+   
+def Adminlogin():
+  global LoginScreen, usernameEntry, passwordEntry
+  try:
+    GUI.destroy()
+  except:
+    pass
+  LoginScreen = Tk()
+  LoginScreen.title("Pharmacy Managment System")
+  LoginScreen.configure(bg='#d2d2d2')
+  LoginScreen.minsize(1400,650)
+  LoginScreen.resizable(0,0)
+  
+  labelbanner= Label(LoginScreen,text="Login As Administrator",bg="RED",fg="BLACK",font=("Times", 30),relief="ridge")
+  labelbanner.grid(columnspan=7,padx=550)
+
+  usernameLabel=Label(LoginScreen, text=" Username: ", width=7, bg="#d2d2d2",font=("Times",20))
+  usernameLabel.place(x=350,y=150)
+  usernameEntry = Entry(LoginScreen,font=("Times", 20))
+  usernameEntry.place(x=550,y=150)
+  
+  PasswordLabel=Label(LoginScreen, text="Password:" , width=7, bg="#d2d2d2",font=("Times",20))
+  PasswordLabel.place(x=350,y=250)
+  passwordEntry = Entry(LoginScreen, font=("Times", 20), show= '*')
+  passwordEntry.place(x=550,y=250)
+
+  loginbutton= Button(LoginScreen, text ="Login",font=("Arial", 20), command =lambda : newAdminLogin())
+  loginbutton.place(x=600,y=400)
+  LoginScreen.mainloop()
+  
+login()
 
 
 
