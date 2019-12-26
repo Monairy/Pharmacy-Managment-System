@@ -920,6 +920,7 @@ def NewEmployee():
 ############################
 
 def DisplayEmployeeInfo(searched_name):
+  try:
     global info_display
 
     D2 = EmployeeDataBase()
@@ -935,7 +936,8 @@ def DisplayEmployeeInfo(searched_name):
     info_display.insert(INSERT, 'Phone: ' + Dictdata["phone"] + '\n')
     info_display.insert(INSERT, 'Age: ' + Dictdata["age"] + '\n')
     info_display.configure(state='disabled')
-
+  except:
+    ShowError("Error")
 
 def GetEmployeeName():
     global search_label,search_entry,Buttonseach
@@ -1376,4 +1378,15 @@ def Adminlogin():
   
 login()
 
-   
+
+
+'''receipt=Receipt()
+receipt.AddItem("mon",12,14)
+receipt.AddItem("ahmed",10,20)
+receipt.AddItem("_",3,2)
+receipt.printrec()
+receipt.CalcSum()
+
+for key,value in Receipt.items.items():
+    print (key[0])'''
+        
