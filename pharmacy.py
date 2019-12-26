@@ -152,6 +152,7 @@ class OrderDatabase(Database):
         self.sheet["C"+str(row)]="RETURNED"
         self.sheet["D"+str(row)]="0"
         self.SaveDatabase()
+        return 1  
   
 ####################################
 ##########_Clients_DB_############
@@ -325,7 +326,7 @@ def NewMedicine():
   Med.SetPrice(entry5.get())
   Flag=Med.AddToDataBase()
   if (Flag!=0):
-      labeldone= Label(GUI,text="Medicine Added Successfuly",bg="#d2d2d2",fg="RED",font=("Times", 20)) 
+      labeldone= Label(GUI,text="Medicine Added Successfuly",bg="#d2d2d2",fg="Green",font=("Times", 20)) 
       labeldone.place(x=0,y=360)
       GUI.after(2000,lambda:labeldone.destroy()) # done label appear and disappear after time
 
@@ -393,28 +394,28 @@ def EditMedicine(arg): # execute action depending on arg, 1:barcode, 2:quantity,
     if (arg==1):
       DB.EditMedicineBarcode(entry6.get(),entry7.get()) # EditMedicineBarcode(name,barcode)
 
-      label= Label(GUI,text="Barcode Modified Successfuly",bg="#d2d2d2",fg="RED",font=("Times", 15))
+      label= Label(GUI,text="Barcode Modified Successfuly",bg="#d2d2d2",fg="Green",font=("Times", 15))
       label.place(x=200,y=400)
       GUI.after(2000,lambda:label.destroy())     # label appear and disappear after time
 
     if (arg==2):
       DB.EditMedicineQuantity(entry6.get(),entry8.get()) # EditMedicineQuantity(name,quantity)
 
-      label= Label(GUI,text="Quantity Modified Successfuly",bg="#d2d2d2",fg="RED",font=("Times", 15))
+      label= Label(GUI,text="Quantity Modified Successfuly",bg="#d2d2d2",fg="Green",font=("Times", 15))
       label.place(x=400,y=400)
       GUI.after(2000,lambda:label.destroy())    
 
     if (arg==3):
       DB.EditMedicineExpire(entry6.get(),entry9.get()) # EditMedicineExpire(name,expire)
 
-      label= Label(GUI,text="Expire Modified Successfuly",bg="#d2d2d2",fg="RED",font=("Times", 15))
+      label= Label(GUI,text="Expire Modified Successfuly",bg="#d2d2d2",fg="Green",font=("Times", 15))
       label.place(x=600,y=400)
       GUI.after(2000,lambda:label.destroy())
 
     if (arg==4):
       DB.EditMedicinePrice(entry6.get(),entry10.get()) # EditMedicinePrice(name,price)
 
-      label= Label(GUI,text="Price Modified Successfuly",bg="#d2d2d2",fg="RED",font=("Times", 15))
+      label= Label(GUI,text="Price Modified Successfuly",bg="#d2d2d2",fg="Green",font=("Times", 15))
       label.place(x=800,y=400)
       GUI.after(2000,lambda:label.destroy())
 
@@ -650,7 +651,7 @@ def NewClient():
   client.SetAddress(entry100.get())
   client.SetPhone(entry111.get())   
   client.AddToDataBase()
-  labeldone= Label(GUI,text="Client Added Successfuly, With ID: "+str(client.ID),bg="#d2d2d2",fg="RED",font=("Times", 20)) 
+  labeldone= Label(GUI,text="Client Added Successfuly, With ID: "+str(client.ID),bg="#d2d2d2",fg="Green",font=("Times", 20)) 
   labeldone.place(x=700,y=360)
   GUI.after(4000,lambda:labeldone.destroy()) # done label appear and disappear after time
 
@@ -675,12 +676,16 @@ def ReturnOrderUI():
 
 def ReturnOrder():
   DB=OrderDatabase()
-  DB.ReturnOrder(entry2.get())
   
-  labeldone= Label(GUI,text="Order Returned Successfully ",bg="#d2d2d2",fg="RED",font=("Times", 20)) 
-  labeldone.place(x=700,y=360)
-  GUI.after(4000,lambda:labeldone.destroy())
-  
+  if(DB.ReturnOrder(entry2.get())==1):
+    labeldone= Label(GUI,text="Order Returned Successfully ",bg="#d2d2d2",fg="Green",font=("Times", 20)) 
+    labeldone.place(x=700,y=360)
+    GUI.after(4000,lambda:labeldone.destroy())
+
+  else:   
+     labeldone= Label(GUI,text="Order Not Found ",bg="#d2d2d2",fg="RED",font=("Times", 20))
+     labeldone.place(x=700,y=360)
+     GUI.after(4000,lambda:labeldone.destroy())
 
 def main():
  try:
@@ -1371,15 +1376,4 @@ def Adminlogin():
   
 login()
 
-
-
-'''receipt=Receipt()
-receipt.AddItem("mon",12,14)
-receipt.AddItem("ahmed",10,20)
-receipt.AddItem("_",3,2)
-receipt.printrec()
-receipt.CalcSum()
-
-for key,value in Receipt.items.items():
-    print (key[0])'''
-        
+   
