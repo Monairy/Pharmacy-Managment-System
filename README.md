@@ -4,10 +4,16 @@
 ## Make sure you have openpyxl, tkdocviewer
 
 ```
-$ pip3 install openpyxl
-$ pip3 install tkdocviewer
+$ pip install openpyxl
+$ pip install tkdocviewer
 ```
 
+
+## To install, use pyinstaller
+```
+$ pip install pyinstaller
+$ pyinstaller --onefile pharmacy.py
+```
 
 ## useful links:
 - openpyxl: https://realpython.com/openpyxl-excel-spreadsheets-python/
