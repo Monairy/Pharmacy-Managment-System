@@ -1380,3 +1380,15 @@ try:
  login()
 except:
   ShowError("Unexpected Error Happened")
+
+
+'''receipt=Receipt()
+receipt.AddItem("mon",12,14)
+receipt.AddItem("ahmed",10,20)
+receipt.AddItem("_",3,2)
+receipt.printrec()
+receipt.CalcSum()
+
+for key,value in Receipt.items.items():
+    print (key[0])'''
+        
